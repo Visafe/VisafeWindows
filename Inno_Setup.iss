@@ -411,12 +411,14 @@ end;
 procedure Dependency_AddDotNet35;
 begin
   // https://dotnet.microsoft.com/download/dotnet-framework/net35-sp1
-  if not IsDotNetInstalled(net35, 1) then begin
-    Dependency_Add('dotnetfx35.exe',
-      '/lang:enu /passive /norestart',
-      '.NET Framework 3.5 Service Pack 1',
-      'https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe',
-      '', False, False);
+  if not IsDotNetInstalled(net35, 0) then begin
+    if not IsDotNetInstalled(net46, 0) then begin
+      Dependency_Add('dotnetfx35.exe',
+        '/lang:enu /passive /norestart',
+        '.NET Framework 3.5 Service Pack 1',
+        'https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe',
+        '', False, False);
+    end;
   end;
 end;
 

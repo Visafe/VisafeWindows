@@ -50,3 +50,7 @@ D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.csproj.
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.csproj.CopyComplete
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.exe
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.pdb
+D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\Visafe.exe.manifest
+D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\Visafe.application
+D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.exe.manifest
+D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.application
