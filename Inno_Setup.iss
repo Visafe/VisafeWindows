@@ -8,7 +8,7 @@
                           
 // custom setup info
 #define MyAppName "VisafeWindows"
-#define MyAppVersion "1.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "National Cyber Security Center of Vietnam - Vietnam NCSC"
 #define MyAppURL "https://visafe.vn/"
 #define MyAppExeName "Visafe.exe"
@@ -311,21 +311,19 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-//Source: "D:\WORK\NCSC\VisafeForWindows\VisafeFinal\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-//Source: "D:\WORK\NCSC\VisafeForWindows\VisafeFinal\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion
-//Source: "D:\WORK\NCSC\VisafeForWindows\VisafeFinal\Visafe.pdb"; DestDir: "{app}"; Flags: ignoreversion
-//Source: "D:\WORK\NCSC\VisafeForWindows\VisafeFinal\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion
-//Source: "D:\WORK\NCSC\VisafeForWindows\VisafeFinal\VisafeService.pdb"; DestDir: "{app}"; Flags: ignoreversion
-
-Source: "Visafe\Visafe\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Visafe\Visafe\bin\Debug\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Visafe\Visafe\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; \
+  BeforeInstall: TaskKill('Visafe.exe')
+Source: "Visafe\Visafe\bin\Debug\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion; \
+  BeforeInstall: TaskKill('dnsproxy.exe')
 Source: "Visafe\Visafe\bin\Debug\Visafe.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\Newtonsoft.Json.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\RestSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\RestSharp.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
+  BeforeInstall: TaskKill('VisafeService.exe')
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "VisafeService\VisafeService\bin\Debug\version.txt"; DestDir: "{app}"; Flags: ignoreversion
 #ifdef UseNetCoreCheck
 // download netcorecheck.exe: https://go.microsoft.com/fwlink/?linkid=2135256
 // download netcorecheck_x64.exe: https://go.microsoft.com/fwlink/?linkid=2135504
@@ -360,6 +358,14 @@ Filename: {sys}\taskkill.exe; Parameters: "/f /im VisafeService.exe"; Flags: ski
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+procedure TaskKill(FileName: String);
+var
+  ResultCode: Integer;
+begin
+    Exec('taskkill.exe', '/f /im ' + '"' + FileName + '"', '', SW_HIDE,
+     ewWaitUntilTerminated, ResultCode);
+end;
+
 function InitializeSetup: Boolean;
 var
   Version: String;

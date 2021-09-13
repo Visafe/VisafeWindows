@@ -21,24 +21,8 @@ namespace VisafeService
 
         static void flushDNS()
         {
-            string flushDnsCmd = @"/C ipconfig /all";
-            try
-            {
-                var process = new Process
-                {
-                    StartInfo = new ProcessStartInfo("cmd.exe", flushDnsCmd)
-
-                };
-                process.Start();
-
-                process.WaitForExit();
-                Console.WriteLine(String.Format("Successfully Flushed DNS:'{0}'", flushDnsCmd), EventLogEntryType.Information);
-
-            }
-            catch (Exception exp)
-            {
-                Console.WriteLine(String.Format("Failed to Flush DNS:'{0}' . Error:{1}", flushDnsCmd, exp.Message), EventLogEntryType.Error);
-            }
+            string flushDnsCmd = @"/C ipconfig /flushdns";
+            Helper.ExecuteCmdCommand(flushDnsCmd);
         }
 
         private bool PingCheckHealth()

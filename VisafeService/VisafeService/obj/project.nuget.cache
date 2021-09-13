@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "TlBatVOJONhc2e3UhW10++kSMcqsyFTxbvDhGuKwICmI3x3r9yOEniLXuZAw3J6yOa6ZFEM/aguYNyXvzCZSDA==",
+  "success": true,
+  "projectFilePath": "D:\\WORK\\NCSC\\Visafe-related\\VisafeWindows\\VisafeService\\VisafeService\\VisafeService.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\thisPC\\.nuget\\packages\\newtonsoft.json\\12.0.3\\newtonsoft.json.12.0.3.nupkg.sha512",
+    "C:\\Users\\thisPC\\.nuget\\packages\\restsharp\\105.2.3\\restsharp.105.2.3.nupkg.sha512",
+    "C:\\Users\\thisPC\\.nuget\\packages\\system.valuetuple\\4.5.0\\system.valuetuple.4.5.0.nupkg.sha512"
+  ],
+  "logs": []
+}

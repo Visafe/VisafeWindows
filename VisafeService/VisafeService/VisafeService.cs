@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.IO.Pipes;
 using System.Security.AccessControl;
+using System.Reflection;
 
 namespace VisafeService
 {
@@ -41,12 +42,15 @@ namespace VisafeService
         private Thread _thread = null;
         private EventLog _eventLog;
         private DNSServer _dnsServer;
+        //private Thread _threadCheckVisafe = null;
+        //private Updater _updater;
 
         public VisafeService()
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "VisafeService";
             _dnsServer = new DNSServer();
+            //_updater = new Updater(Constants.VERSION_INFO_URL);
 
             InitializeComponent();
         }
@@ -55,6 +59,9 @@ namespace VisafeService
         {
             _thread = new Thread(new ThreadStart(Run));
             _thread.Start();
+
+            //_threadCheckVisafe = new Thread(new ThreadStart(CheckVisafeRunning));
+            //_threadCheckVisafe.Start();
         }
 
         protected override void OnStop()
@@ -63,6 +70,26 @@ namespace VisafeService
             _dnsServer.Stop();
         }
 
+        private void CheckVisafeRunning()
+        {
+            while (true)
+            {
+                //if the process Visafe is killed or stopped, restart it
+                Process[] proc = Process.GetProcessesByName("Visafe");
+                if (proc.Length == 0)
+                {
+                    string currentFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+                    string visafeExeFile = Path.Combine(currentFolder, "Visafe.exe");
+
+                    if (File.Exists(visafeExeFile))
+                    {
+                        Helper.RunExecutable(visafeExeFile);
+                    }
+                }
+
+                Thread.Sleep(5000);
+            }
+        }
         private void Run()
         {
             while (true)
@@ -98,6 +125,10 @@ namespace VisafeService
                             _dnsServer.Start(signalData["user_id"]);
                         }
                         else if (signalData["signal"] == "stop")
+                        {
+                            _dnsServer.Stop();
+                        }
+                        else if (signalData["signal"] == "update")
                         {
                             _dnsServer.Stop();
                         }

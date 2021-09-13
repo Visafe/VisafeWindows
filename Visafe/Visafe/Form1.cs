@@ -31,31 +31,6 @@ namespace Visafe
             InitializeComponent();
         }
 
-        public bool PingCheckHealth()
-        {
-            int threshold = 5;
-            Ping myPing = new Ping();
-            PingReply reply;
-
-            for (int i = 0; i < threshold; i++)
-            {
-                try
-                {
-                    reply = myPing.Send(Constant.DNS_BASE_URL, 600);
-                    if (reply != null)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-
-            return false;
-        }
-
         public void SendInvitingUrl()
         {
             string url = text_url.Text;
@@ -359,8 +334,8 @@ namespace Visafe
         {
             if (MessageBox.Show("Thiết bị của bạn có thể bị ảnh hưởng bởi tấn công mạng. \nBạn muốn tắt bảo vệ?", "Bạn đang tắt chế độ bảo vệ!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             {
-                Application.Exit();
                 stopService();
+                Application.Exit();
             }
         }
 
