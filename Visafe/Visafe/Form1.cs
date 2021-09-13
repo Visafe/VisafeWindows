@@ -1,17 +1,14 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using System.Linq;
 using System.Net;
-using System.Management;
-using System.Net.NetworkInformation;
 using Visafe.Properties;
-using System.Web.Script.Serialization;
-using System.Web;
 using System.IO.Pipes;
 using System.Text.RegularExpressions;
+using RestSharp.Extensions.MonoHttp;
+using System.Web.Script.Serialization;
+
 
 namespace Visafe
 {

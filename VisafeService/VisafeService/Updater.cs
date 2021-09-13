@@ -113,11 +113,11 @@ namespace VisafeService
 
         private bool upgrade(string url, string version)
         {
-            (string installerPath, bool succeeded) = downloadInstaller(url, version);
+            string installerPath = downloadInstaller(url, version);
 
-            if (succeeded != true)
+            if (installerPath == null)
             {
-                return succeeded;
+                return false;
             }
 
             string command = @"/S /C " + installerPath;
@@ -138,7 +138,7 @@ namespace VisafeService
             return true;
         }
 
-        private (string installerPath, bool succeeded) downloadInstaller(string url, string version)
+        private string downloadInstaller(string url, string version)
         {
             string fileName = String.Format("VisafeUpgrader_v{0}.exe", version);
             string fileLocation = Path.Combine(Path.GetTempPath(), fileName);
@@ -149,7 +149,7 @@ namespace VisafeService
                 //return true if the installer has been downloaded and existing for less than 1 day
                 if (fi.LastWriteTime > DateTime.Now.AddDays(-1))
                 {
-                    return (fileLocation, true);
+                    return fileLocation;
                 } 
                 else
                 {
@@ -169,7 +169,7 @@ namespace VisafeService
                 Console.WriteLine(e);
             }
 
-            return (null, false);
+            return null;
         }
     }
 }

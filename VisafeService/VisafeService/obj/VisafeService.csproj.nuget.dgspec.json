@@ -23,20 +23,20 @@
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net40"
+          "net35"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net40": {
+          "net35": {
             "projectReferences": {}
           }
         }
       },
       "frameworks": {
-        "net40": {
+        "net35": {
           "dependencies": {
             "Newtonsoft.Json": {
               "target": "Package",
@@ -45,10 +45,6 @@
             "RestSharp": {
               "target": "Package",
               "version": "[105.2.3, )"
-            },
-            "System.ValueTuple": {
-              "target": "Package",
-              "version": "[4.5.0, )"
             }
           }
         }

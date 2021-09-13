@@ -1,6 +1,6 @@
 ﻿// requires netcorecheck.exe and netcorecheck_x64.exe (see download link below)
-//#define UseDotNet40Full
-#define UseDotNet46
+#define UseDotNet35
+//#define UseDotNet46
 //#define UseNetCoreCheck
 //#ifdef UseNetCoreCheck
   //#define UseDotNet50
@@ -317,9 +317,7 @@ Source: "Visafe\Visafe\bin\Debug\dnsproxy.exe"; DestDir: "{app}"; Flags: ignorev
   BeforeInstall: TaskKill('dnsproxy.exe')
 Source: "Visafe\Visafe\bin\Debug\Visafe.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Visafe\Visafe\bin\Debug\Newtonsoft.Json.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\RestSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "Visafe\Visafe\bin\Debug\RestSharp.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: TaskKill('VisafeService.exe')
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.pdb"; DestDir: "{app}"; Flags: ignoreversion
@@ -358,6 +356,24 @@ Filename: {sys}\taskkill.exe; Parameters: "/f /im VisafeService.exe"; Flags: ski
 Type: filesandordirs; Name: "{app}"
 
 [Code]
+// types and variables
+type
+  TDependency_Entry = record
+    Filename: String;
+    Parameters: String;
+    Title: String;
+    URL: String;
+    Checksum: String;
+    ForceSuccess: Boolean;
+    RestartAfter: Boolean;
+  end;
+
+var
+  Dependency_Memo: String;
+  Dependency_List: array of TDependency_Entry;
+  Dependency_NeedRestart, Dependency_ForceX86: Boolean;
+  Dependency_DownloadPage: TDownloadWizardPage;
+
 procedure TaskKill(FileName: String);
 var
   ResultCode: Integer;
@@ -366,12 +382,53 @@ begin
      ewWaitUntilTerminated, ResultCode);
 end;
 
+procedure Dependency_Add(const Filename, Parameters, Title, URL, Checksum: String; const ForceSuccess, RestartAfter: Boolean);
+var
+  Dependency: TDependency_Entry;
+  DependencyCount: Integer;
+begin
+  Dependency_Memo := Dependency_Memo + #13#10 + '%1' + Title;
+
+  Dependency.Filename := Filename;
+  Dependency.Parameters := Parameters;
+  Dependency.Title := Title;
+
+  if FileExists(ExpandConstant('{tmp}{\}') + Filename) then begin
+    Dependency.URL := '';
+  end else begin
+    Dependency.URL := URL;
+  end;
+
+  Dependency.Checksum := Checksum;
+  Dependency.ForceSuccess := ForceSuccess;
+  Dependency.RestartAfter := RestartAfter;
+
+  DependencyCount := GetArrayLength(Dependency_List);
+  SetArrayLength(Dependency_List, DependencyCount + 1);
+  Dependency_List[DependencyCount] := Dependency;
+end;
+
+procedure Dependency_AddDotNet35;
+begin
+  // https://dotnet.microsoft.com/download/dotnet-framework/net35-sp1
+  if not IsDotNetInstalled(net35, 1) then begin
+    Dependency_Add('dotnetfx35.exe',
+      '/lang:enu /passive /norestart',
+      '.NET Framework 3.5 Service Pack 1',
+      'https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe',
+      '', False, False);
+  end;
+end;
+
 function InitializeSetup: Boolean;
 var
   Version: String;
   PackedVersion: Int64;
 begin
 
+#ifdef UseDotNet35
+  Dependency_AddDotNet35;
+#endif
 
 #ifdef UseDotNet40Full
   // https://www.microsoft.com/en-US/download/details.aspx?id=17718
@@ -380,6 +437,17 @@ begin
       '/lcid ' + IntToStr(GetUILanguage) + ' /passive /norestart',
       '.NET Framework 4.0',
       'https://download.microsoft.com/download/1/B/E/1BE39E79-7E39-46A3-96FF-047F95396215/dotNetFx40_Full_setup.exe',
+      '', False, False, False);
+  end;
+#endif
+
+#ifdef UseDotNet40Client
+  // https://www.microsoft.com/en-US/download/details.aspx?id=17718
+  if not IsDotNetInstalled(net4full, 0) then begin
+    AddDependency('dotNetFx40_Client_setup.exe',
+      '/lcid ' + IntToStr(GetUILanguage) + ' /passive /norestart',
+      '.NET Framework 4.0 Client Profile',
+      'https://download.microsoft.com/download/7/B/6/7B629E05-399A-4A92-B5BC-484C74B5124B/dotNetFx40_Client_setup.exe',
       '', False, False, False);
   end;
 #endif

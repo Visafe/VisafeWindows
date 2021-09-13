@@ -148,10 +148,17 @@ namespace Visafe
             char[] chars =
                 "abcdefghijklmnopqrstuvwxyz1234567890".ToCharArray();
             byte[] data = new byte[size];
-            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
+
+            RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider();
+            try
             {
                 crypto.GetBytes(data);
             }
+            catch (Exception e)
+            {
+                return null;
+            }
+
             StringBuilder result = new StringBuilder(size);
             foreach (byte b in data)
             {

@@ -6,7 +6,6 @@ using System.Net;
 using System.Management;
 using System.Net.NetworkInformation;
 using System.IO;
-using System.Web.Script.Serialization;
 using System.Security.Cryptography;
 using System.Diagnostics;
 
