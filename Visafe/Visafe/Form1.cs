@@ -52,6 +52,8 @@ namespace Visafe
             }
             else
             {
+                string realUrl = Helper.UrlLengthen(url);
+
                 string deviceId;
                 string groupId;
                 string groupName;
@@ -66,7 +68,7 @@ namespace Visafe
 
                 try
                 {
-                    Uri myUri = new Uri(url);
+                    Uri myUri = new Uri(realUrl);
                     groupId = HttpUtility.ParseQueryString(myUri.Query).Get("groupId");
                     groupName = HttpUtility.ParseQueryString(myUri.Query).Get("groupName");
                 }
@@ -128,7 +130,7 @@ namespace Visafe
                 ServicePointManager.Expect100Continue = true;
                 ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
 
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(realUrl);
                 request.Method = "POST";
 
                 try
