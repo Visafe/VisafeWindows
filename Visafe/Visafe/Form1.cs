@@ -8,7 +8,9 @@ using System.IO.Pipes;
 using System.Text.RegularExpressions;
 using RestSharp.Extensions.MonoHttp;
 using System.Web.Script.Serialization;
-
+using static Visafe.Helper;
+using RestSharp;
+using Newtonsoft.Json;
 
 namespace Visafe
 {
@@ -130,30 +132,28 @@ namespace Visafe
                 ServicePointManager.Expect100Continue = true;
                 ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
 
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(realUrl);
-                request.Method = "POST";
+                var client = new RestClient(realUrl);
+                var request = new RestRequest(Method.POST);
+                request.RequestFormat = DataFormat.Json;
 
                 try
                 {
-                    using (var streamWriter = new StreamWriter(request.GetRequestStream()))
+                    request.AddJsonBody(new
                     {
-                        string json = new JavaScriptSerializer().Serialize(new
-                        {
-                            deviceId = deviceId,
-                            groupName = groupName,
-                            groupId = groupId,
-                            deviceName = deviceName,
-                            macAddress = macAddress,
-                            ipAddress = ipAddress,
-                            deviceType = deviceType,
-                            deviceOwner = deviceOwner,
-                            deviceDetail = deviceDetail,
-                        });
+                        deviceId = deviceId,
+                        groupName = groupName,
+                        groupId = groupId,
+                        deviceName = deviceName,
+                        macAddress = macAddress,
+                        ipAddress = ipAddress,
+                        deviceType = deviceType,
+                        deviceOwner = deviceOwner,
+                        deviceDetail = deviceDetail,
+                    });
 
-                        streamWriter.Write(json);
-                    }
-              
-                    var response = (HttpWebResponse)request.GetResponse();
+                    var response = client.Execute(request);
+
+                    JoiningGroupResp respContent = JsonConvert.DeserializeObject<JoiningGroupResp>(response.Content);
 
                     //var responseString = response.Content.ReadAsStringAsync();
 
@@ -161,7 +161,7 @@ namespace Visafe
                     {
                         //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME, Constant.NOTI_TITLE, "Không thể lưu URL", ToolTipIcon.Error);
                         status_label.Text = "";
-                        MessageBox.Show(Constant.SAVING_ERROR_MSG, Constant.NOTI_TITLE);
+                        MessageBox.Show(respContent.msg, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     else
                     {

@@ -8,6 +8,12 @@ namespace Visafe
 {
     public static class Helper
     {
+        public class JoiningGroupResp
+        {
+            public string status { get; set; }
+            public string msg { get; set; }
+        }
+
         public static string UrlLengthen(string url)
         {
             string newurl = url;
