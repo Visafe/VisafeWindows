@@ -24,7 +24,6 @@ D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\VisafeService.pdb
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\Newtonsoft.Json.dll
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\RestSharp.dll
-D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\obj\Debug\VisafeService.csprojAssemblyReference.cache
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\obj\Debug\VisafeService.ProjectInstaller.resources
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\obj\Debug\VisafeService.VisafeService.resources
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\obj\Debug\VisafeService.csproj.GenerateResource.cache

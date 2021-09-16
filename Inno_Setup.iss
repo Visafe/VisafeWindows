@@ -1,5 +1,6 @@
 ﻿// requires netcorecheck.exe and netcorecheck_x64.exe (see download link below)
-#define UseDotNet35
+//#define UseDotNet35
+#define UseDotNet40Full
 //#define UseDotNet46
 //#define UseNetCoreCheck
 //#ifdef UseNetCoreCheck
@@ -412,7 +413,7 @@ procedure Dependency_AddDotNet35;
 begin
   // https://dotnet.microsoft.com/download/dotnet-framework/net35-sp1
   if not IsDotNetInstalled(net35, 0) then begin
-    if not IsDotNetInstalled(net46, 0) then begin
+    if not (IsDotNetInstalled(net4Client, 0) and IsDotNetInstalled(net4Full, 0) and IsDotNetInstalled(net45, 0) and IsDotNetInstalled(net46, 0) and IsDotNetInstalled(net47,0) and IsDotNetInstalled(net48,0)) then begin
       Dependency_Add('dotnetfx35.exe',
         '/lang:enu /passive /norestart',
         '.NET Framework 3.5 Service Pack 1',
@@ -429,7 +430,14 @@ var
 begin
 
 #ifdef UseDotNet35
-  Dependency_AddDotNet35;
+  //Dependency_AddDotNet35;
+  if not (IsDotNetInstalled(net35, 0) and IsDotNetInstalled(net4Client, 0) and IsDotNetInstalled(net4Full, 0) and IsDotNetInstalled(net45, 0) and IsDotNetInstalled(net46, 0) and IsDotNetInstalled(net47,0) and IsDotNetInstalled(net48,0)) then begin
+      Dependency_Add('dotnetfx35.exe',
+        '/lang:enu /passive /norestart',
+        '.NET Framework 3.5 Service Pack 1',
+        'https://download.microsoft.com/download/2/0/E/20E90413-712F-438C-988E-FDAA79A8AC3D/dotnetfx35.exe',
+        '', False, False);
+  end;
 #endif
 
 #ifdef UseDotNet40Full
