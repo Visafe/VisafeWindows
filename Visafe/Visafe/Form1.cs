@@ -16,7 +16,6 @@ namespace Visafe
 {
     public partial class Form1 : Form
     {
-        private bool isOn = false; //default state is off
         private EventLog _eventLog;
 
         private DeviceInfoObtainer deviceInfoObtainer = new DeviceInfoObtainer();
@@ -28,6 +27,8 @@ namespace Visafe
 
 
             InitializeComponent();
+
+            //checkForUpdate();
         }
 
         public void SendInvitingUrl()
@@ -66,7 +67,19 @@ namespace Visafe
                 string deviceOwner;
                 string deviceDetail;
 
-                deviceId = this.deviceInfoObtainer.GetID();
+                //deviceId = this.deviceInfoObtainer.GetID();
+
+                string signalDataString = "signal << get_id;";
+                var tempId = sendSignal(signalDataString);
+
+                if (tempId != null)
+                {
+                    deviceId = tempId;
+                }
+                else
+                {
+                    deviceId = "";
+                }
 
                 try
                 {
@@ -129,8 +142,7 @@ namespace Visafe
                 }
 
                 //establish secure channel
-                ServicePointManager.Expect100Continue = true;
-                ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 var client = new RestClient(realUrl);
                 var request = new RestRequest(Method.POST);
@@ -208,34 +220,25 @@ namespace Visafe
         }
 
         //function used to start service
-        private void startService()
+        private bool startService()
         {
-            string user_id = this.deviceInfoObtainer.GetID();
-            string signalDataString = "signal << start; user_id << " + user_id + ";";
+            //string user_id = this.deviceInfoObtainer.GetID();
+            //string signalDataString = "signal << start; user_id << " + user_id + ";";
+            string signalDataString = "signal << start;";
 
             var sendResult = sendSignal(signalDataString);
 
             if (sendResult == null)
             {
-                //push notification
-                //notifyIcon1.BalloonTipIcon = ToolTipIcon.Error;
-                //notifyIcon1.BalloonTipText = "Không thể khởi động Visafe";
-                //notifyIcon1.BalloonTipTitle = Constant.NOTI_TITLE;
-                //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME);
-
                 //show message box
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return false;
             }
             else
             {
-                //push notification
-                //notifyIcon1.BalloonTipIcon = ToolTipIcon.Info;
-                //notifyIcon1.BalloonTipText = "Visafe đã được kích hoạt";
-                //notifyIcon1.BalloonTipTitle = Constant.NOTI_TITLE;
-                //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME);
-
                 //Show message box
-                MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return true;
             }
         }
 
@@ -248,14 +251,43 @@ namespace Visafe
 
             if (sendResult == null)
             {
-                //push notification
-                //notifyIcon1.BalloonTipIcon = ToolTipIcon.Error;
-                //notifyIcon1.BalloonTipText = "Không thể khởi động Visafe";
-                //notifyIcon1.BalloonTipTitle = Constant.NOTI_TITLE;
-                //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME);
-
                 //show message box
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Không thể tắt Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        //function used to stop service
+        private void checkForUpdate()
+        {
+            string signalDataString = "signal << check_for_update;";
+
+            var sendResult = sendSignal(signalDataString);
+
+            if (sendResult == null)
+            {
+                //show message box
+                //MessageBox.Show("Không thể cập nhật Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else if (sendResult == "new")
+            {
+                string message = "Visafe có bản cập nhật mới, bạn có muốn cài đặt?";
+                MessageBoxButtons buttons = MessageBoxButtons.YesNo;
+                DialogResult result = MessageBox.Show(message, Constant.NOTI_TITLE, buttons);
+                if (result == DialogResult.Yes)
+                {
+                    string signalDataString1 = "signal << update;";
+
+                    var sendResult1 = sendSignal(signalDataString1);
+
+                    if (sendResult1 == null)
+                    {
+                        //show message box
+                        MessageBox.Show("Không thể cập nhật Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+                else
+                {
+                }
             }
         }
 
@@ -274,7 +306,7 @@ namespace Visafe
         //function to start visafe application
         private void Form1_Load(object sender, EventArgs e)
         {
-            string user_id = this.deviceInfoObtainer.GetID();
+            //string user_id = this.deviceInfoObtainer.GetID();
             string invitingURL = this.deviceInfoObtainer.GetUrl();
 
             text_url.Text = invitingURL;
@@ -286,12 +318,16 @@ namespace Visafe
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
 
-            //disable resizing, disable Minimize and Maximum button
-            //this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            //this.MaximizeBox = false;
-            //this.MinimizeBox = false;
+            bool started = startService();
 
-            startService();
+            if (started == true)
+            {
+                MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -308,11 +344,17 @@ namespace Visafe
 
             item_turnoff.Visible = true;
             item_turnon.Visible = false;
-            Hide();
             ShowInTaskbar = false;
-            WindowState = FormWindowState.Minimized;
+            //WindowState = FormWindowState.Minimized;
+            Hide();
+
             //start service
-            startService();
+            bool started = startService();
+
+            if (started == false)
+            {
+                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // When click Turn off in tray icon
@@ -346,7 +388,6 @@ namespace Visafe
         private void openSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Show();
-            //this.TopMost = true;
             this.ShowInTaskbar = true;
             WindowState = FormWindowState.Normal;
         }

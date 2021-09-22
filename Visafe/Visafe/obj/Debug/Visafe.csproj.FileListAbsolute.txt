@@ -44,8 +44,6 @@ D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\Visafe.exe
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\Visafe.pdb
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\Newtonsoft.Json.dll
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\RestSharp.dll
-D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\bin\Debug\System.Threading.dll
-D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.csprojAssemblyReference.cache
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.Form1.resources
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.Properties.Resources.resources
 D:\WORK\NCSC\Visafe-related\VisafeWindows\Visafe\Visafe\obj\Debug\Visafe.csproj.GenerateResource.cache

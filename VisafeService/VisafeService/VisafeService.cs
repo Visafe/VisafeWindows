@@ -43,13 +43,21 @@ namespace VisafeService
         private EventLog _eventLog;
         private DNSServer _dnsServer;
         //private Thread _threadCheckVisafe = null;
-        //private Updater _updater;
+        private Updater _updater;
 
         public VisafeService()
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "VisafeService";
             _dnsServer = new DNSServer();
+            _updater = new Updater(Constants.VERSION_INFO_URL);
+
+            //var dnsProxyProcesses = Process.GetProcessesByName("dnsproxy");
+            //foreach (Process pr in dnsProxyProcesses)
+            //{
+            //    pr.Kill();
+            //}
+
             //_updater = new Updater(Constants.VERSION_INFO_URL);
 
             InitializeComponent();
@@ -66,8 +74,8 @@ namespace VisafeService
 
         protected override void OnStop()
         {
-            _thread.Abort();
             _dnsServer.Stop();
+            _thread.Abort();            
         }
 
         private void CheckVisafeRunning()
@@ -122,24 +130,45 @@ namespace VisafeService
                     {
                         if (signalData["signal"] == "start")
                         {
-                            _dnsServer.Start(signalData["user_id"]);
+                            //_dnsServer.Start(signalData["user_id"]);
+                            _dnsServer.Start();
+                            ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
                         else if (signalData["signal"] == "stop")
                         {
                             _dnsServer.Stop();
+                            ss.WriteString("received"); //recevie signal from client and return it back to confirm
+                        }
+                        else if (signalData["signal"] == "check_for_update")
+                        {
+                            bool newVersion = _updater.CheckForUpdate();
+
+                            if (newVersion == true)
+                            {
+                                ss.WriteString("new");
+                            }
+                            else
+                            {
+                                ss.WriteString("no_new");
+                            }
                         }
                         else if (signalData["signal"] == "update")
                         {
                             _dnsServer.Stop();
+                            ss.WriteString("received");
+
+                            _updater.Upgrade();
+                        }
+                        else if (signalData["signal"] == "get_id")
+                        {
+                            string user_id = Helper.GetID();
+                            ss.WriteString(user_id);
                         }
                     }
                     catch (Exception e)
                     {
                         _eventLog.WriteEntry(e.Message, EventLogEntryType.Error);
                     }
-                    
-
-                    ss.WriteString("received"); //recevie signal from client and return it back to confirm
                 }
                 catch (IOException e)
                 {

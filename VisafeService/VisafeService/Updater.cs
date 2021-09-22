@@ -23,11 +23,14 @@ namespace VisafeService
     {
         private string _versionInfoUrl;
         private string _currentVersion;
+        private string _newVersion = "";
+        private string _newVersionUrl = "";
 
         public Updater(string versionInfoUrl = "") {
             this._versionInfoUrl = versionInfoUrl;
 
-            string currentFolder = Directory.GetCurrentDirectory();
+            //string currentFolder = Directory.GetCurrentDirectory();
+            string currentFolder = System.AppDomain.CurrentDomain.BaseDirectory;
             string verionFile = Path.Combine(currentFolder, Constants.VERSION_FILE_NAME);
 
             try
@@ -67,10 +70,8 @@ namespace VisafeService
             return _currentVersion;
         }
 
-        public bool CheckNow()
+        public bool CheckForUpdate()
         {
-            string newVersion = "";
-            string newVersionUrl = "";
             if (this._currentVersion == "")
             {
                 return false;
@@ -84,17 +85,20 @@ namespace VisafeService
                 var request = new RestRequest(Method.GET);
                 request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
 
+                ServicePointManager.Expect100Continue = true;
+                ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
                 IRestResponse response = client.Execute(request);
 
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string rawResponse = response.Content;
                     VersionInfoResponse respContent =  JsonConvert.DeserializeObject<VersionInfoResponse>(rawResponse);
-                    newVersionUrl = respContent.stable.url;
-                    newVersion = respContent.stable.version;
+                    _newVersionUrl = respContent.stable.url;
+                    _newVersion = respContent.stable.version;
 
-                    if (newVersion != _currentVersion) {
-                        return upgrade(newVersionUrl, newVersion);
+                    if (_newVersion != _currentVersion) {
+                        //return upgrade(newVersionUrl, newVersion);
+                        return true;
                     }
                 }
                 else
@@ -111,24 +115,34 @@ namespace VisafeService
             return false;
         }
 
-        private bool upgrade(string url, string version)
+        public bool Upgrade()
         {
-            string installerPath = downloadInstaller(url, version);
+            if (_newVersion == "" || _newVersionUrl == "")
+            {
+                return false;
+            } else if (_newVersion == _currentVersion)
+            {
+                return false;
+            }
+
+            string installerPath = downloadInstaller(_newVersionUrl, _newVersion);
 
             if (installerPath == null)
             {
                 return false;
             }
 
-            string command = @"/S /C " + installerPath;
+            string procesName = @"cmd.exe";
+            string args = @"/c " + installerPath + " /SILENT";
             try
             {
-                var process = new Process
-                {
-                    StartInfo = new ProcessStartInfo("cmd.exe", command)
-
-                };
-                process.Start();
+                ProcessStartInfo p_info = new ProcessStartInfo();
+                p_info.UseShellExecute = true;
+                p_info.CreateNoWindow = false;
+                p_info.WindowStyle = ProcessWindowStyle.Normal;
+                p_info.Arguments = args;
+                p_info.FileName = procesName;
+                Process updateProcess = Process.Start(p_info);
 
             }
             catch (Exception exp)
@@ -169,7 +183,7 @@ namespace VisafeService
                 Console.WriteLine(e);
             }
 
-            return null;
+            return fileLocation;
         }
     }
 }

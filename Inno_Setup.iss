@@ -1,7 +1,7 @@
 ﻿// requires netcorecheck.exe and netcorecheck_x64.exe (see download link below)
 //#define UseDotNet35
-#define UseDotNet40Full
-//#define UseDotNet46
+//#define UseDotNet40Full
+#define UseDotNet46
 //#define UseNetCoreCheck
 //#ifdef UseNetCoreCheck
   //#define UseDotNet50
@@ -9,7 +9,7 @@
                           
 // custom setup info
 #define MyAppName "VisafeWindows"
-#define MyAppVersion "1.1.0"
+#define MyAppVersion "1.1.2"
 #define MyAppPublisher "National Cyber Security Center of Vietnam - Vietnam NCSC"
 #define MyAppURL "https://visafe.vn/"
 #define MyAppExeName "Visafe.exe"
@@ -32,11 +32,11 @@ DisableProgramGroupPage=yes
 ;PrivilegesRequired=lowest
 OutputDir=.
 OutputBaseFilename=VisafeWindows-installer
-//SetupIconFile=D:\WORK\NCSC\VisafeForWindows\Visafe\Visafe\logo-footer.ico
 SetupIconFile=Visafe\Visafe\logo-footer.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+CloseApplications=yes
 
 
 // shared code for installing the dependencies
@@ -322,7 +322,7 @@ Source: "Visafe\Visafe\bin\Debug\RestSharp.dll"; DestDir: "{app}"; Flags: ignore
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: TaskKill('VisafeService.exe')
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.pdb"; DestDir: "{app}"; Flags: ignoreversion
-Source: "VisafeService\VisafeService\bin\Debug\version.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "version.txt"; DestDir: "{app}"; Flags: ignoreversion
 #ifdef UseNetCoreCheck
 // download netcorecheck.exe: https://go.microsoft.com/fwlink/?linkid=2135256
 // download netcorecheck_x64.exe: https://go.microsoft.com/fwlink/?linkid=2135504
@@ -331,15 +331,19 @@ Source: "SupportPrograms\netcorecheck_x64.exe"; Flags: dontcopy noencryption
 #endif
 
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
+[InstallDelete]
+Type: filesandordirs; Name: "{app}"
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: {sys}\sc.exe; Parameters: "create VisafeService start= auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
+Filename: {sys}\sc.exe; Parameters: "create VisafeService start= delayed-auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
+Filename: {sys}\sc.exe; Parameters: "description VisafeService ""Service used for Visafe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "start VisafeService" ; Flags: runhidden
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+//Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall nowait
 
 [Registry]
 Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; \
@@ -348,10 +352,10 @@ Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; \
 
 [UninstallRun]
 Filename: {sys}\sc.exe; Parameters: "stop VisafeService" ; Flags: runhidden
-Filename: {sys}\sc.exe; Parameters: "delete VisafeService" ; Flags: runhidden
 Filename: {sys}\taskkill.exe; Parameters: "/f /im {#MyAppExeName}"; Flags: skipifdoesntexist runhidden
 Filename: {sys}\taskkill.exe; Parameters: "/f /im dnsproxy.exe"; Flags: skipifdoesntexist runhidden
 Filename: {sys}\taskkill.exe; Parameters: "/f /im VisafeService.exe"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\sc.exe; Parameters: "delete VisafeService" ; Flags: runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

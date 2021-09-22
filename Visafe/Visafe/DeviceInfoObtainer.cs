@@ -57,6 +57,7 @@ namespace Visafe
 
             return IPAddress;
         }
+
         public string GetUrl()
         {
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
