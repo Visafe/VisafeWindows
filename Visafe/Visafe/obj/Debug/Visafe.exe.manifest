@@ -67,14 +67,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Visafe.exe" size="182784">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Visafe.exe" size="185856">
       <assemblyIdentity name="Visafe" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>JInpZSRuixVizKWxYdUUEp1WpJ6eLLmDDEtSmqh7M94=</dsig:DigestValue>
+        <dsig:DigestValue>b2//qFrcSJR5oHaH0sNOh6D3e4kyUmreB2y3/ChmBns=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

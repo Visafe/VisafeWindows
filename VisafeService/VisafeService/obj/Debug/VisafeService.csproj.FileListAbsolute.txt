@@ -18,7 +18,6 @@ D:\WORK\NCSC\Visafe-related\VisafeForWindows\VisafeService\VisafeService\obj\Deb
 D:\WORK\NCSC\Visafe-related\VisafeForWindows\VisafeService\VisafeService\obj\Debug\VisafeService.csproj.CoreCompileInputs.cache
 D:\WORK\NCSC\Visafe-related\VisafeForWindows\VisafeService\VisafeService\obj\Debug\VisafeService.exe
 D:\WORK\NCSC\Visafe-related\VisafeForWindows\VisafeService\VisafeService\obj\Debug\VisafeService.pdb
-D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\version.txt
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\VisafeService.exe.config
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\VisafeService.exe
 D:\WORK\NCSC\Visafe-related\VisafeWindows\VisafeService\VisafeService\bin\Debug\VisafeService.pdb

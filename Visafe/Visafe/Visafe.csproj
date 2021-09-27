@@ -111,6 +111,7 @@
     </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="StreamString.cs" />
+    <Compile Include="Updater.cs" />
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>

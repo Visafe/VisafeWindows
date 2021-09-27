@@ -9,7 +9,7 @@
                           
 // custom setup info
 #define MyAppName "VisafeWindows"
-#define MyAppVersion "1.1.2"
+#define MyAppVersion "1.1.3"
 #define MyAppPublisher "National Cyber Security Center of Vietnam - Vietnam NCSC"
 #define MyAppURL "https://visafe.vn/"
 #define MyAppExeName "Visafe.exe"
@@ -33,10 +33,11 @@ DisableProgramGroupPage=yes
 OutputDir=.
 OutputBaseFilename=VisafeWindows-installer
 SetupIconFile=Visafe\Visafe\logo-footer.ico
+UninstallDisplayIcon={app}\logo-footer.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
-CloseApplications=yes
+CloseApplications=force
 
 
 // shared code for installing the dependencies
@@ -314,13 +315,14 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "Visafe\Visafe\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: TaskKill('Visafe.exe')
+Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
+  BeforeInstall: StopAndKillVisafeService()
 Source: "Visafe\Visafe\bin\Debug\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: TaskKill('dnsproxy.exe')
 Source: "Visafe\Visafe\bin\Debug\Visafe.pdb"; DestDir: "{app}"; Flags: ignoreversion
+Source: "Visafe\Visafe\Resources\logo-footer.ico"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\bin\Debug\RestSharp.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
-  BeforeInstall: TaskKill('VisafeService.exe')
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "version.txt"; DestDir: "{app}"; Flags: ignoreversion
 #ifdef UseNetCoreCheck
@@ -342,7 +344,6 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Filename: {sys}\sc.exe; Parameters: "create VisafeService start= delayed-auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "description VisafeService ""Service used for Visafe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "start VisafeService" ; Flags: runhidden
-//Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall nowait skipifsilent
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall nowait
 
 [Registry]
@@ -385,6 +386,15 @@ var
 begin
     Exec('taskkill.exe', '/f /im ' + '"' + FileName + '"', '', SW_HIDE,
      ewWaitUntilTerminated, ResultCode);
+end;
+
+procedure StopAndKillVisafeService();
+var
+  ResultCode1: Integer;
+  ResultCode2: Integer;
+begin
+    Exec('sc.exe', 'stop ' + 'VisafeService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode1);
+    Exec('taskkill.exe', '/f /im VisafeService.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode2);
 end;
 
 procedure Dependency_Add(const Filename, Parameters, Title, URL, Checksum: String; const ForceSuccess, RestartAfter: Boolean);

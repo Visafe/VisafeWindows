@@ -42,23 +42,14 @@ namespace VisafeService
         private Thread _thread = null;
         private EventLog _eventLog;
         private DNSServer _dnsServer;
-        //private Thread _threadCheckVisafe = null;
-        private Updater _updater;
+        private bool _threadRunning;
 
         public VisafeService()
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "VisafeService";
             _dnsServer = new DNSServer();
-            _updater = new Updater(Constants.VERSION_INFO_URL);
-
-            //var dnsProxyProcesses = Process.GetProcessesByName("dnsproxy");
-            //foreach (Process pr in dnsProxyProcesses)
-            //{
-            //    pr.Kill();
-            //}
-
-            //_updater = new Updater(Constants.VERSION_INFO_URL);
+            _threadRunning = true;
 
             InitializeComponent();
         }
@@ -67,40 +58,17 @@ namespace VisafeService
         {
             _thread = new Thread(new ThreadStart(Run));
             _thread.Start();
-
-            //_threadCheckVisafe = new Thread(new ThreadStart(CheckVisafeRunning));
-            //_threadCheckVisafe.Start();
         }
 
         protected override void OnStop()
         {
-            _dnsServer.Stop();
-            _thread.Abort();            
+            _threadRunning = false;
+            _dnsServer.Exit();
         }
 
-        private void CheckVisafeRunning()
-        {
-            while (true)
-            {
-                //if the process Visafe is killed or stopped, restart it
-                Process[] proc = Process.GetProcessesByName("Visafe");
-                if (proc.Length == 0)
-                {
-                    string currentFolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-                    string visafeExeFile = Path.Combine(currentFolder, "Visafe.exe");
-
-                    if (File.Exists(visafeExeFile))
-                    {
-                        Helper.RunExecutable(visafeExeFile);
-                    }
-                }
-
-                Thread.Sleep(5000);
-            }
-        }
         private void Run()
         {
-            while (true)
+            while (_threadRunning == true)
             {
                 PipeSecurity ps = new PipeSecurity();
                 ps.AddAccessRule(new PipeAccessRule("Users", PipeAccessRights.ReadWrite, AccessControlType.Allow));
@@ -130,7 +98,6 @@ namespace VisafeService
                     {
                         if (signalData["signal"] == "start")
                         {
-                            //_dnsServer.Start(signalData["user_id"]);
                             _dnsServer.Start();
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
@@ -139,31 +106,24 @@ namespace VisafeService
                             _dnsServer.Stop();
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
-                        else if (signalData["signal"] == "check_for_update")
+                        else if (signalData["signal"] == "exit")
                         {
-                            bool newVersion = _updater.CheckForUpdate();
-
-                            if (newVersion == true)
-                            {
-                                ss.WriteString("new");
-                            }
-                            else
-                            {
-                                ss.WriteString("no_new");
-                            }
+                            _dnsServer.Exit();
+                            ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
                         else if (signalData["signal"] == "update")
                         {
-                            _dnsServer.Stop();
                             ss.WriteString("received");
-
-                            _updater.Upgrade();
                         }
                         else if (signalData["signal"] == "get_id")
                         {
                             string user_id = Helper.GetID();
                             ss.WriteString(user_id);
                         }
+                    }
+                    catch (ThreadAbortException ex)
+                    {
+                        //do nothing
                     }
                     catch (Exception e)
                     {

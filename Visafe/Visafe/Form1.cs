@@ -20,22 +20,21 @@ namespace Visafe
 
         private DeviceInfoObtainer deviceInfoObtainer = new DeviceInfoObtainer();
 
+        private Updater _updater;
+
         public Form1()
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "Visafe";
 
+            _updater = new Updater(Constant.VERSION_INFO_URL);
 
             InitializeComponent();
-
-            //checkForUpdate();
         }
 
         public void SendInvitingUrl()
         {
             string url = text_url.Text;
-            //if (url != this.deviceInfoObtainer.GetUrl())
-            //{
 
             status_label.Text = "Đang lưu...";
 
@@ -44,7 +43,6 @@ namespace Visafe
 
             if ((url == "") || !url.Contains("http"))
             {
-                //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME, Constant.NOTI_TITLE, "Error", ToolTipIcon.Error);
                 status_label.Text = "";
                 MessageBox.Show("URL không hợp lệ", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
@@ -171,7 +169,6 @@ namespace Visafe
 
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
-                        //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME, Constant.NOTI_TITLE, "Không thể lưu URL", ToolTipIcon.Error);
                         status_label.Text = "";
                         MessageBox.Show(respContent.msg, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
@@ -199,7 +196,6 @@ namespace Visafe
                             writer.Close();
                         }
 
-                        //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME, Constant.NOTI_TITLE, Constant.SAVING_SUCCESS_MSG, ToolTipIcon.Info);
                         status_label.Text = "";
                         MessageBox.Show(Constant.SAVING_SUCCESS_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
                     }
@@ -208,15 +204,9 @@ namespace Visafe
                 {
                     status_label.Text = "";
                     Console.WriteLine(e.Message);
-                    //notifyIcon1.ShowBalloonTip(Constant.NOTI_TIME, Constant.NOTI_TITLE, "Không thể lưu URL", ToolTipIcon.Error);
                     MessageBox.Show(Constant.SAVING_ERROR_MSG + "\n\nURL không hợp lệ hoặc thiết bị đã tham gia vào nhóm hoặc thiết bị đang ở nhóm khác", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            //}
-            //else
-            //{
-            //    MessageBox.Show("URL không thay đổi", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            //}
         }
 
         //function used to start service
@@ -230,14 +220,10 @@ namespace Visafe
 
             if (sendResult == null)
             {
-                //show message box
-                //MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return false;
             }
             else
             {
-                //Show message box
-                //MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return true;
             }
         }
@@ -256,19 +242,25 @@ namespace Visafe
             }
         }
 
-        //function used to stop service
-        private void checkForUpdate()
+        private void exitService()
         {
-            string signalDataString = "signal << check_for_update;";
+            string signalDataString = "signal << exit;";
 
             var sendResult = sendSignal(signalDataString);
 
             if (sendResult == null)
             {
                 //show message box
-                //MessageBox.Show("Không thể cập nhật Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("Không thể tắt Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            else if (sendResult == "new")
+        }
+
+        //function used to stop service
+        private void checkForUpdate()
+        {
+            bool newVersion = _updater.CheckForUpdate();
+
+            if (newVersion == true)
             {
                 string message = "Visafe có bản cập nhật mới, bạn có muốn cài đặt?";
                 MessageBoxButtons buttons = MessageBoxButtons.YesNo;
@@ -283,10 +275,10 @@ namespace Visafe
                     {
                         //show message box
                         MessageBox.Show("Không thể cập nhật Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
                     }
-                }
-                else
-                {
+
+                    _updater.Upgrade();
                 }
             }
         }
@@ -328,6 +320,8 @@ namespace Visafe
             {
                 MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+
+            checkForUpdate();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -368,14 +362,14 @@ namespace Visafe
             stopService();
         }
 
-        // When click Exit in tray icon
+        //When click Exit in tray icon
         //close application
         //stop service
         private void item_exit_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Thiết bị của bạn có thể bị ảnh hưởng bởi tấn công mạng. \nBạn muốn tắt bảo vệ?", "Bạn đang tắt chế độ bảo vệ!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             {
-                stopService();
+                exitService();
                 Application.Exit();
             }
         }

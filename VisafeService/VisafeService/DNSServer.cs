@@ -170,6 +170,8 @@ namespace VisafeService
                     }
                 }
             }
+
+
         }
 
         public void Start()
@@ -233,9 +235,19 @@ namespace VisafeService
         {
             UnsetDNS();
 
-            if (isOn == true)
+            isOn = false;
+        }
+
+        public void Exit()
+        {
+            UnsetDNS();
+
+            try
             {
                 _dnsProxyProcess.Kill();
+            }
+            catch (Exception e)
+            {
             }
 
             isOn = false;

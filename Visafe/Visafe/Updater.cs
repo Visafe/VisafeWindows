@@ -8,14 +8,15 @@ using Newtonsoft.Json;
 using System.Net;
 using System.Diagnostics;
 
-namespace VisafeService
+namespace Visafe
 {
     class StableVersion
     {
         public string version { get; set; }
         public string url { get; set; }
     }
-    class VersionInfoResponse {
+    class VersionInfoResponse
+    {
         public StableVersion stable { get; set; }
     }
 
@@ -26,12 +27,13 @@ namespace VisafeService
         private string _newVersion = "";
         private string _newVersionUrl = "";
 
-        public Updater(string versionInfoUrl = "") {
+        public Updater(string versionInfoUrl = "")
+        {
             this._versionInfoUrl = versionInfoUrl;
 
             //string currentFolder = Directory.GetCurrentDirectory();
             string currentFolder = System.AppDomain.CurrentDomain.BaseDirectory;
-            string verionFile = Path.Combine(currentFolder, Constants.VERSION_FILE_NAME);
+            string verionFile = Path.Combine(currentFolder, Constant.VERSION_FILE_NAME);
 
             try
             {
@@ -47,7 +49,7 @@ namespace VisafeService
                     if (tempVer?.Length == null)
                     {
                         _currentVersion = "";
-                    } 
+                    }
                     else
                     {
                         _currentVersion = tempVer;
@@ -57,12 +59,13 @@ namespace VisafeService
                 {
                     _currentVersion = "";
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 _currentVersion = "";
             }
-           
+
         }
 
         public string GetVersion()
@@ -92,11 +95,12 @@ namespace VisafeService
                 if (response.StatusCode == HttpStatusCode.OK)
                 {
                     string rawResponse = response.Content;
-                    VersionInfoResponse respContent =  JsonConvert.DeserializeObject<VersionInfoResponse>(rawResponse);
+                    VersionInfoResponse respContent = JsonConvert.DeserializeObject<VersionInfoResponse>(rawResponse);
                     _newVersionUrl = respContent.stable.url;
                     _newVersion = respContent.stable.version;
 
-                    if (_newVersion != _currentVersion) {
+                    if (_newVersion != _currentVersion)
+                    {
                         //return upgrade(newVersionUrl, newVersion);
                         return true;
                     }
@@ -120,7 +124,8 @@ namespace VisafeService
             if (_newVersion == "" || _newVersionUrl == "")
             {
                 return false;
-            } else if (_newVersion == _currentVersion)
+            }
+            else if (_newVersion == _currentVersion)
             {
                 return false;
             }
@@ -132,8 +137,11 @@ namespace VisafeService
                 return false;
             }
 
-            string procesName = @"cmd.exe";
-            string args = @"/c " + installerPath + " /SILENT";
+            //string procesName = @"cmd.exe";
+            //string args = @"/c " + installerPath + " /SILENT";
+
+            string procesName = installerPath;
+            string args = @"/SILENT";
             try
             {
                 ProcessStartInfo p_info = new ProcessStartInfo();
@@ -143,7 +151,6 @@ namespace VisafeService
                 p_info.Arguments = args;
                 p_info.FileName = procesName;
                 Process updateProcess = Process.Start(p_info);
-
             }
             catch (Exception exp)
             {
@@ -157,14 +164,15 @@ namespace VisafeService
             string fileName = String.Format("VisafeUpgrader_v{0}.exe", version);
             string fileLocation = Path.Combine(Path.GetTempPath(), fileName);
 
-            if (File.Exists(fileLocation)) {
+            if (File.Exists(fileLocation))
+            {
                 FileInfo fi = new FileInfo(fileLocation);
 
                 //return true if the installer has been downloaded and existing for less than 1 day
                 if (fi.LastWriteTime > DateTime.Now.AddDays(-1))
                 {
                     return fileLocation;
-                } 
+                }
                 else
                 {
                     File.Delete(fileLocation);
@@ -173,11 +181,16 @@ namespace VisafeService
 
             try
             {
+                var running_mode = Environment.GetEnvironmentVariable("VISAFE_RUNNING_MODE");
+                if (running_mode == "debug")
+                {
+                    url = "https://github.com/thang-ngn/VisafeWindows/releases/latest/download/VisafeWindows-installer.exe";
+                }
                 var client = new RestClient(url);
                 var request = new RestRequest(Method.GET);
                 byte[] response = client.DownloadData(request);
                 File.WriteAllBytes(fileLocation, response);
-            } 
+            }
             catch (Exception e)
             {
                 Console.WriteLine(e);
