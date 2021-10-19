@@ -39,6 +39,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -74,6 +75,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="DNSServer.cs" />
+    <Compile Include="DNSUnleaker.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
@@ -90,6 +92,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WFP.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ProjectInstaller.resx">

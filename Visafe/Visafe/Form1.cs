@@ -7,7 +7,6 @@ using Visafe.Properties;
 using System.IO.Pipes;
 using System.Text.RegularExpressions;
 using RestSharp.Extensions.MonoHttp;
-using System.Web.Script.Serialization;
 using static Visafe.Helper;
 using RestSharp;
 using Newtonsoft.Json;
@@ -298,6 +297,20 @@ namespace Visafe
         //function to start visafe application
         private void Form1_Load(object sender, EventArgs e)
         {
+            notifyIcon1.Visible = false;
+
+            bool started = startService();
+
+            if (started == true)
+            {
+                MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             //string user_id = this.deviceInfoObtainer.GetID();
             string invitingURL = this.deviceInfoObtainer.GetUrl();
 
@@ -309,17 +322,6 @@ namespace Visafe
             Hide();
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
-
-            bool started = startService();
-
-            if (started == true)
-            {
-                MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
-            {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
 
             checkForUpdate();
         }
@@ -333,6 +335,14 @@ namespace Visafe
         //restart program and service
         private void item_turnon_Click(object sender, EventArgs e)
         {
+            //start service
+            bool started = startService();
+
+            if (started == false)
+            {
+                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             //start program
             notifyIcon1.Icon = Resources.turnon;
 
@@ -341,14 +351,6 @@ namespace Visafe
             ShowInTaskbar = false;
             //WindowState = FormWindowState.Minimized;
             Hide();
-
-            //start service
-            bool started = startService();
-
-            if (started == false)
-            {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         // When click Turn off in tray icon

@@ -9,7 +9,7 @@
                           
 // custom setup info
 #define MyAppName "VisafeWindows"
-#define MyAppVersion "1.1.3"
+#define MyAppVersion "1.1.4"
 #define MyAppPublisher "National Cyber Security Center of Vietnam - Vietnam NCSC"
 #define MyAppURL "https://visafe.vn/"
 #define MyAppExeName "Visafe.exe"
@@ -341,9 +341,10 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: {sys}\sc.exe; Parameters: "create VisafeService start= delayed-auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
+Filename: {sys}\sc.exe; Parameters: "create VisafeService start= auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "description VisafeService ""Service used for Visafe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "start VisafeService" ; Flags: runhidden
+Filename: {sys}\sc.exe; Parameters: "failure VisafeService reset= 2000 actions= restart/2000/restart/2000/restart/2000" ; Flags: runhidden
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: postinstall nowait
 
 [Registry]

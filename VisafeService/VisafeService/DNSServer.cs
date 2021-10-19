@@ -6,7 +6,6 @@ using System.Net;
 using System.Management;
 using System.Net.NetworkInformation;
 using System.IO;
-using System.Security.Cryptography;
 using System.Diagnostics;
 
 namespace VisafeService
@@ -14,7 +13,6 @@ namespace VisafeService
     class DNSServer
     {
         private bool isOn = false; //default state is off
-        const string DNS_BASE_URL = "dns.visafe.vn";
 
         private Process _dnsProxyProcess;
         private NetworkInterface _currInterface;
@@ -33,7 +31,7 @@ namespace VisafeService
             Helper.ExecuteCmdCommand(flushDnsCmd);
         }
 
-        private bool PingCheckHealth()
+        private bool PingCheckHealth(string domain)
         {
             int threshold = 5;
             Ping myPing = new Ping();
@@ -43,7 +41,7 @@ namespace VisafeService
             {
                 try
                 {
-                    reply = myPing.Send(DNS_BASE_URL, 600);
+                    reply = myPing.Send(domain, 600);
                     if (reply != null)
                     {
                         return true;
@@ -116,9 +114,6 @@ namespace VisafeService
 
         public void UnsetDNS()
         {
-            //var CurrentInterface = GetActiveEthernetOrWifiNetworkInterface();
-            //if (CurrentInterface == null) return;
-
             var CurrentInterface = _currInterface;
 
             ManagementClass objMC = new ManagementClass("Win32_NetworkAdapterConfiguration");
@@ -171,7 +166,7 @@ namespace VisafeService
                 }
             }
 
-
+            flushDNS();
         }
 
         public void Start()
@@ -179,15 +174,11 @@ namespace VisafeService
             string user_id = Helper.GetID();
             var dnsCryptProxyExecutablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "dnsproxy.exe");
 
-            if (PingCheckHealth() == true)
-            {
-                //thangnn2 - set DNS to loopback so that everything will be directed to this service
-                SetDNS("127.0.0.2");
-            }
+            //get the best host for DOH server from routing API
+            string dohHost = Helper.GetDohHost();
 
-            //commandline to direct to our dns service : dnsproxy.exe -u  https://dns.visafe.vn/dns-query/ + userid -b 1.1.1.1:53"
             //source code dnsproxy: https://github.com/AdguardTeam/dnsproxy
-            string arguments = " -u https://" + DNS_BASE_URL + "/dns-query/" + user_id + " -l 127.0.0.2 -b 1.1.1.1:53";
+            string arguments = " -u https://" + dohHost + "/dns-query/" + user_id + Constants.DNSPROXY_ARGS;
 
             _dnsProxyProcess.StartInfo.UseShellExecute = false;
             _dnsProxyProcess.StartInfo.FileName = dnsCryptProxyExecutablePath;
@@ -195,8 +186,6 @@ namespace VisafeService
             _dnsProxyProcess.StartInfo.CreateNoWindow = true;
             _dnsProxyProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             _dnsProxyProcess.Start();
-
-            //int pid = this._dnsProxyProcess.Id;
 
             //set state to on
             isOn = true;
@@ -206,16 +195,12 @@ namespace VisafeService
         {
             var dnsCryptProxyExecutablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "dnsproxy.exe");
 
-            if (PingCheckHealth() == true)
-            {
-                //thangnn2 - set DNS to loopback so that everything will be directed to this service
-                SetDNS("127.0.0.2");
-            }
+            //get DOH host from routing API
+            string dohHost = Helper.GetDohHost();
 
-            //commandline to direct to our dns service : dnsproxy.exe -u  https://dns.visafe.vn/dns-query/ + userid -b 1.1.1.1:53"
             //source code dnsproxy: https://github.com/AdguardTeam/dnsproxy
-            //string arguments = " -u https://dns.google/dns-query" + " -b 1.1.1.1:53";
-            string arguments = " -u https://" + DNS_BASE_URL + "/dns-query/" + user_id + " -l 127.0.0.2 -b 1.1.1.1:53";
+            string arguments = " -u https://" + dohHost + "/dns-query/" + user_id + Constants.DNSPROXY_ARGS;
+
             //this._dnsProxyProcess = new Process();
             this._dnsProxyProcess.StartInfo.UseShellExecute = false;
             this._dnsProxyProcess.StartInfo.FileName = dnsCryptProxyExecutablePath;

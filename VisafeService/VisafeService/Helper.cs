@@ -17,6 +17,12 @@ namespace VisafeService
         public string deviceId { get; set; }
     }
 
+    class RoutingResponse
+    {
+        public string hostname { get; set; }
+        public string ip { get; set; }
+    }
+
     public static class Helper
     {
         public static bool ExecuteCmdCommand(string cmdArgs)
@@ -155,7 +161,7 @@ namespace VisafeService
             {
                 crypto.GetBytes(data);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return null;
             }
@@ -258,6 +264,35 @@ namespace VisafeService
             }
 
             return result;
+        }
+        
+        public static string GetDohHost()
+        {
+            string dohHost = Constants.DEFAULT_DOH_HOST;
+            try
+            {
+                var client = new RestClient(Constants.ROUTING_API);
+                client.Timeout = 10;
+
+                var request = new RestRequest(Method.GET);
+                request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string rawResponse = response.Content;
+                    RoutingResponse responseContent = JsonConvert.DeserializeObject<RoutingResponse>(rawResponse);
+                    dohHost = responseContent.hostname;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return dohHost;
+            }
+
+            return dohHost;
         }
     }
 }
