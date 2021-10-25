@@ -187,33 +187,10 @@ namespace VisafeService
             _dnsProxyProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
             _dnsProxyProcess.Start();
 
-            //set state to on
-            isOn = true;
-        }
-
-        public void Start(string user_id)
-        {
-            var dnsCryptProxyExecutablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "dnsproxy.exe");
-
-            //get DOH host from routing API
-            string dohHost = Helper.GetDohHost();
-
-            //source code dnsproxy: https://github.com/AdguardTeam/dnsproxy
-            string arguments = " -u https://" + dohHost + "/dns-query/" + user_id + Constants.DNSPROXY_ARGS;
-
-            //this._dnsProxyProcess = new Process();
-            this._dnsProxyProcess.StartInfo.UseShellExecute = false;
-            this._dnsProxyProcess.StartInfo.FileName = dnsCryptProxyExecutablePath;
-            this._dnsProxyProcess.StartInfo.Arguments = arguments.ToLower();
-            this._dnsProxyProcess.StartInfo.CreateNoWindow = true;
-            this._dnsProxyProcess.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            this._dnsProxyProcess.Start();
-
-            int pid = this._dnsProxyProcess.Id;
+            SetDNS(Constants.LOCAL_DNS_SERVER);
 
             //set state to on
             isOn = true;
-
         }
 
         public void Stop()
