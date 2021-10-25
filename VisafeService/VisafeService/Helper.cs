@@ -272,7 +272,7 @@ namespace VisafeService
             try
             {
                 var client = new RestClient(Constants.ROUTING_API);
-                client.Timeout = 10;
+                client.Timeout = 10000;
 
                 var request = new RestRequest(Method.GET);
                 request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
