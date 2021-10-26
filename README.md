@@ -1,6 +1,6 @@
 
 <p align="center">
-  <img width="300px" src="https://app.visafe.vn/static/media/logo.90ea0558.svg"/>
+  <img width="300px" src="https://visafe.vn/static/media/logo-visafe.033d436f.svg"/>
 </p>
 <h1 align="center">Visafe - Internet an toàn cho người Việt</h1>
 
@@ -29,6 +29,4 @@
 + Tổ chức doanh nghiệp
 + Cơ quan chính phủ
 
-<h3 align="left">4. Đơn vị thực hiện</h3>
-
- + <h4>Trung tâm Giám sát an toàn không gian mạng Quốc gia</h4> <img src="https://khonggianmang.vn/assets/img/logoNEWNCSC.png" style="width:100px"/>
+Xem thêm tại: https://visafe.vn 
