@@ -29,4 +29,8 @@
 + Tổ chức doanh nghiệp
 + Cơ quan chính phủ
 
+
+Phát triển dựa trên:
+https://github.com/AdguardTeam/dnsproxy 
+
 Xem thêm tại: https://visafe.vn 
