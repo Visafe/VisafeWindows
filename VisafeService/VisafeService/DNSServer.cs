@@ -12,7 +12,7 @@ namespace VisafeService
 {
     class DNSServer
     {
-        private bool isOn = false; //default state is off
+        public bool isOn = false; //default state is off
 
         private Process _dnsProxyProcess;
         private NetworkInterface _currInterface;

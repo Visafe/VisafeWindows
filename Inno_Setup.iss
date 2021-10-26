@@ -341,7 +341,7 @@ Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: {sys}\sc.exe; Parameters: "create VisafeService start= auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
+Filename: {sys}\sc.exe; Parameters: "create VisafeService start= delayed-auto binPath= ""{app}\VisafeService.exe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "description VisafeService ""Service used for Visafe""" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "start VisafeService" ; Flags: runhidden
 Filename: {sys}\sc.exe; Parameters: "failure VisafeService reset= 2000 actions= restart/2000/restart/2000/restart/2000" ; Flags: runhidden

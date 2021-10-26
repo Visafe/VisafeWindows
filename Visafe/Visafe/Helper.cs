@@ -9,6 +9,8 @@ namespace Visafe
         {
             public string status { get; set; }
             public string msg { get; set; }
+
+            public string local_msg { get; set; }
         }
 
         public static string UrlLengthen(string url)

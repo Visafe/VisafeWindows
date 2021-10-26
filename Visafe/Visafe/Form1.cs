@@ -169,7 +169,7 @@ namespace Visafe
                     if (response.StatusCode != HttpStatusCode.OK)
                     {
                         status_label.Text = "";
-                        MessageBox.Show(respContent.msg, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(respContent.local_msg, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                     else
                     {
@@ -311,17 +311,17 @@ namespace Visafe
                 return;
             }
 
-            //string user_id = this.deviceInfoObtainer.GetID();
-            string invitingURL = this.deviceInfoObtainer.GetUrl();
-
-            text_url.Text = invitingURL;
-
             notifyIcon1.Visible = true;
             item_turnoff.Visible = true;
             item_turnon.Visible = false;
             Hide();
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
+
+            //string user_id = this.deviceInfoObtainer.GetID();
+            string invitingURL = this.deviceInfoObtainer.GetUrl();
+
+            text_url.Text = invitingURL;
 
             checkForUpdate();
         }
