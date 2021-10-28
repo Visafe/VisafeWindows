@@ -12,6 +12,8 @@ namespace Visafe
         public const string NOTI_TITLE = "VISAFE";
         public const int NOTI_TIME = 500;
         public const string DNS_BASE_URL = "dns.visafe.vn";
+        public const string ADMIN_DASHBOARD_URL = "https://app.visafe.vn";
+        public const string VISAFE_DOC_URL = "https://docs.visafe.vn";
         public const string SAVING_ERROR_MSG = "KHÔNG THỂ LƯU URL";
         public const string SAVING_SUCCESS_MSG = "Đã lưu URL";
     }

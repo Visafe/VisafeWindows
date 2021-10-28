@@ -211,8 +211,6 @@ namespace Visafe
         //function used to start service
         private bool startService()
         {
-            //string user_id = this.deviceInfoObtainer.GetID();
-            //string signalDataString = "signal << start; user_id << " + user_id + ";";
             string signalDataString = "signal << start;";
 
             var sendResult = sendSignal(signalDataString);
@@ -376,11 +374,6 @@ namespace Visafe
             }
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void openSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Show();
@@ -423,6 +416,16 @@ namespace Visafe
             pipeClient.Close();
 
             return returnedSignal;
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(Constant.ADMIN_DASHBOARD_URL);
+        }
+
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(Constant.VISAFE_DOC_URL);
         }
     }
 }
