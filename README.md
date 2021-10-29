@@ -31,7 +31,7 @@
 
 
 Các thư viện và ứng dụng bên thứ ba được sử dụng:
-https://github.com/AdguardTeam/dnsproxy 
-https://github.com/dotnet/deployment-tools/tree/master/src/clickonce/native/projects/NetCoreCheck
++ https://github.com/AdguardTeam/dnsproxy 
++ https://github.com/dotnet/deployment-tools/tree/master/src/clickonce/native/projects/NetCoreCheck
 
 Xem thêm tại: https://visafe.vn 
