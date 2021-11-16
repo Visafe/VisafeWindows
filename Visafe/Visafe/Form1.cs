@@ -10,6 +10,9 @@ using RestSharp.Extensions.MonoHttp;
 using static Visafe.Helper;
 using RestSharp;
 using Newtonsoft.Json;
+using System.Threading;
+using System.Security.AccessControl;
+using System.Collections.Generic;
 
 namespace Visafe
 {
@@ -29,6 +32,39 @@ namespace Visafe
             _updater = new Updater(Constant.VERSION_INFO_URL);
 
             InitializeComponent();
+        }
+
+        //function to start visafe application
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            notifyIcon1.Visible = false;
+
+            bool started = startService();
+
+            if (started == false)
+            {
+                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            notifyIcon1.Visible = true;
+            item_turnoff.Visible = true;
+            item_turnon.Visible = false;
+            Hide();
+            ShowInTaskbar = false;
+            WindowState = FormWindowState.Minimized;
+
+            //string user_id = this.deviceInfoObtainer.GetID();
+            string invitingURL = this.deviceInfoObtainer.GetUrl();
+
+            text_url.Text = invitingURL;
+
+            checkForUpdate();
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Hide();
         }
 
         public void SendInvitingUrl()
@@ -67,7 +103,7 @@ namespace Visafe
                 //deviceId = this.deviceInfoObtainer.GetID();
 
                 string signalDataString = "signal << get_id;";
-                var tempId = sendSignal(signalDataString);
+                var tempId = Helper.SendSignal(signalDataString);
 
                 if (tempId != null)
                 {
@@ -211,9 +247,22 @@ namespace Visafe
         //function used to start service
         private bool startService()
         {
-            string signalDataString = "signal << start;";
+            string signalDataString = "signal << check_start";
+            string sendResult = Helper.SendSignal(signalDataString);
+            int elapsed = 0;
+            while (sendResult != Constant.STARTED_NOTI_STRING) {
+                sendResult = Helper.SendSignal(signalDataString);
+                Thread.Sleep(2000);
+                elapsed += 2000;
+                if (elapsed > 8000)
+                {
+                    return false;
+                }
+            }
 
-            var sendResult = sendSignal(signalDataString);
+            signalDataString = "signal << start;";
+
+            sendResult = Helper.SendSignal(signalDataString);
 
             if (sendResult == null)
             {
@@ -230,7 +279,7 @@ namespace Visafe
         {
             string signalDataString = "signal << stop;";
 
-            var sendResult = sendSignal(signalDataString);
+            var sendResult = Helper.SendSignal(signalDataString);
 
             if (sendResult == null)
             {
@@ -243,7 +292,7 @@ namespace Visafe
         {
             string signalDataString = "signal << exit;";
 
-            var sendResult = sendSignal(signalDataString);
+            var sendResult = Helper.SendSignal(signalDataString);
 
             if (sendResult == null)
             {
@@ -252,7 +301,6 @@ namespace Visafe
             }
         }
 
-        //function used to stop service
         private void checkForUpdate()
         {
             bool newVersion = _updater.CheckForUpdate();
@@ -260,13 +308,20 @@ namespace Visafe
             if (newVersion == true)
             {
                 string message = "Visafe có bản cập nhật mới, bạn có muốn cài đặt?";
+
+                if (_updater.NewVersionDescription != "")
+                {
+                    message = message + "\n\n" + "Những sự thay đổi ở bản cập nhật:";
+                    message = message + "\n" + _updater.NewVersionDescription;
+                }
+
                 MessageBoxButtons buttons = MessageBoxButtons.YesNo;
                 DialogResult result = MessageBox.Show(message, Constant.NOTI_TITLE, buttons);
                 if (result == DialogResult.Yes)
                 {
                     string signalDataString1 = "signal << update;";
 
-                    var sendResult1 = sendSignal(signalDataString1);
+                    var sendResult1 = Helper.SendSignal(signalDataString1);
 
                     if (sendResult1 == null)
                     {
@@ -292,41 +347,15 @@ namespace Visafe
             }
         }
 
-        //function to start visafe application
-        private void Form1_Load(object sender, EventArgs e)
+        //show the form if the notify icon is clicked by the left mouse
+        private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
-            notifyIcon1.Visible = false;
-
-            bool started = startService();
-
-            if (started == true)
+            if (e.Button == MouseButtons.Left)
             {
-                MessageBox.Show("Visafe đã được kích hoạt, bạn đang được bảo vệ khỏi các mối đe dọa trên không gian mạng", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                Show();
+                this.ShowInTaskbar = true;
+                WindowState = FormWindowState.Normal;
             }
-            else
-            {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-
-            notifyIcon1.Visible = true;
-            item_turnoff.Visible = true;
-            item_turnon.Visible = false;
-            Hide();
-            ShowInTaskbar = false;
-            WindowState = FormWindowState.Minimized;
-
-            //string user_id = this.deviceInfoObtainer.GetID();
-            string invitingURL = this.deviceInfoObtainer.GetUrl();
-
-            text_url.Text = invitingURL;
-
-            checkForUpdate();
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Hide();
         }
 
         //when click Turn on in tray icon
@@ -394,30 +423,6 @@ namespace Visafe
             WindowState = FormWindowState.Minimized;
         }
 
-        private string sendSignal(string signal)
-        {
-            var pipeClient = new NamedPipeClientStream(".", "VisafeServicePipe", PipeDirection.InOut, PipeOptions.None);
-
-            string returnedSignal = null;
-            pipeClient.Connect();
-
-            var ss = new StreamString(pipeClient);
-
-            try
-            {
-                ss.WriteString(signal);
-                returnedSignal = ss.ReadString();
-            }
-            catch (Exception exc)
-            {
-                _eventLog.WriteEntry(exc.Message, EventLogEntryType.Error);
-            }
-
-            pipeClient.Close();
-
-            return returnedSignal;
-        }
-
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start(Constant.ADMIN_DASHBOARD_URL);
@@ -426,6 +431,13 @@ namespace Visafe
         private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start(Constant.VISAFE_DOC_URL);
+        }
+
+        private void FormDisplay(object state)
+        {
+            this.Show();
+            this.ShowInTaskbar = true;
+            this.WindowState = FormWindowState.Normal;
         }
     }
 }

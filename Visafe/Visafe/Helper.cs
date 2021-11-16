@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO.Pipes;
 using System.Net;
 
 namespace Visafe
@@ -49,6 +51,53 @@ namespace Visafe
                 }
             }
             return newurl;
+        }
+
+        public static string SendSignal(string signal)
+        {
+            var pipeClient = new NamedPipeClientStream(".", Constant.VISAFE_SERVICE_PIPE, PipeDirection.InOut, PipeOptions.None);
+
+            string returnedSignal = null;
+            pipeClient.Connect();
+
+            var ss = new StreamString(pipeClient);
+
+            try
+            {
+                ss.WriteString(signal);
+                returnedSignal = ss.ReadString();
+            }
+            catch (Exception exc)
+            {
+                //_eventLog.WriteEntry(exc.Message, EventLogEntryType.Error);
+            }
+            finally
+            {
+                pipeClient.Close();
+            }
+
+            return returnedSignal;
+        }
+
+        public static Dictionary<string, string> ParseSignalString(string signalDataString)
+        {
+            Dictionary<string, string> result = new Dictionary<string, string>();
+            string[] dataArr = signalDataString.Split(';');
+
+            foreach (string field in dataArr)
+            {
+                if (field != "")
+                {
+                    field.Trim();   //remove spaces at the beginning and ending of the string
+
+                    string[] delimeters = { "<<" };
+                    string[] fieldArr = field.Split(delimeters, StringSplitOptions.RemoveEmptyEntries);
+
+                    result[fieldArr[0].Trim()] = fieldArr[1].Trim();
+                }
+            }
+
+            return result;
         }
     }
 }

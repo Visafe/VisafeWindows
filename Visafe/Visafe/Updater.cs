@@ -14,7 +14,9 @@ namespace Visafe
     {
         public string version { get; set; }
         public string url { get; set; }
+        public string description { get; set; }
     }
+
     class VersionInfoResponse
     {
         public StableVersion stable { get; set; }
@@ -24,8 +26,9 @@ namespace Visafe
     {
         private string _versionInfoUrl;
         private string _currentVersion;
-        private string _newVersion = "";
+        public string NewVersion = "";
         private string _newVersionUrl = "";
+        public string NewVersionDescription = "";
 
         public Updater(string versionInfoUrl = "")
         {
@@ -97,9 +100,10 @@ namespace Visafe
                     string rawResponse = response.Content;
                     VersionInfoResponse respContent = JsonConvert.DeserializeObject<VersionInfoResponse>(rawResponse);
                     _newVersionUrl = respContent.stable.url;
-                    _newVersion = respContent.stable.version;
+                    NewVersion = respContent.stable.version;
+                    NewVersionDescription = respContent.stable.description;
 
-                    if (_newVersion != _currentVersion)
+                    if (NewVersion != _currentVersion)
                     {
                         //return upgrade(newVersionUrl, newVersion);
                         return true;
@@ -121,24 +125,21 @@ namespace Visafe
 
         public bool Upgrade()
         {
-            if (_newVersion == "" || _newVersionUrl == "")
+            if (NewVersion == "" || _newVersionUrl == "")
             {
                 return false;
             }
-            else if (_newVersion == _currentVersion)
+            else if (NewVersion == _currentVersion)
             {
                 return false;
             }
 
-            string installerPath = downloadInstaller(_newVersionUrl, _newVersion);
+            string installerPath = downloadInstaller(_newVersionUrl, NewVersion);
 
             if (installerPath == null)
             {
                 return false;
             }
-
-            //string procesName = @"cmd.exe";
-            //string args = @"/c " + installerPath + " /SILENT";
 
             string procesName = installerPath;
             string args = @"/SILENT";
@@ -181,11 +182,6 @@ namespace Visafe
 
             try
             {
-                var running_mode = Environment.GetEnvironmentVariable("VISAFE_RUNNING_MODE");
-                if (running_mode == "debug")
-                {
-                    url = "https://github.com/thang-ngn/VisafeWindows/releases/latest/download/VisafeWindows-installer.exe";
-                }
                 var client = new RestClient(url);
                 var request = new RestRequest(Method.GET);
                 byte[] response = client.DownloadData(request);

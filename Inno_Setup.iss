@@ -9,7 +9,7 @@
                           
 // custom setup info
 #define MyAppName "VisafeWindows"
-#define MyAppVersion "1.1.5"
+#define MyAppVersion "1.1.6"
 #define MyAppPublisher "National Cyber Security Center of Vietnam - Vietnam NCSC"
 #define MyAppURL "https://visafe.vn/"
 #define MyAppExeName "Visafe.exe"
