@@ -37,30 +37,40 @@ namespace VisafeService
         public int dwWaitHint;
     };
 
-    public partial class VisafeService : ServiceBase
+    //public partial class VisafeService : ServiceBase
+    public partial class VisafeService : PreshutdownEnabledService
     {
         private Thread _thread = null;
+        private bool _threadRunning;
         private EventLog _eventLog;
         private DNSServer _dnsServer;
-        private bool _threadRunning;
+        private ServiceController _sc;
 
         public VisafeService()
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "VisafeService";
             _dnsServer = new DNSServer();
-            _threadRunning = true;
 
             InitializeComponent();
+
+            _sc = new ServiceController(Constants.SERVICE_NAME);
         }
 
         protected override void OnStart(string[] args)
         {
             _thread = new Thread(new ThreadStart(Run));
             _thread.Start();
+            _threadRunning = true;
         }
 
         protected override void OnStop()
+        {
+            _threadRunning = false;
+            _dnsServer.Exit();
+        }
+
+        protected override void OnShutdown()
         {
             _threadRunning = false;
             _dnsServer.Exit();
@@ -75,7 +85,7 @@ namespace VisafeService
                 ps.AddAccessRule(new PipeAccessRule(System.Security.Principal.WindowsIdentity.GetCurrent().Name, PipeAccessRights.FullControl, AccessControlType.Allow));
                 ps.AddAccessRule(new PipeAccessRule("SYSTEM", PipeAccessRights.FullControl, AccessControlType.Allow));
 
-                var pipeServer = new NamedPipeServerStream("VisafeServicePipe", 
+                var pipeServer = new NamedPipeServerStream(Constants.VISAFE_SERVICE_PIPE, 
                     PipeDirection.InOut, 
                     1,
                     PipeTransmissionMode.Message,
@@ -96,7 +106,15 @@ namespace VisafeService
 
                     try
                     {
-                        if (signalData["signal"] == "start")
+                        //the first signal that the service receives when the application starts to check if it has started
+                        if (signalData["signal"] == "check_start")
+                        {
+                            if (_sc.Status == ServiceControllerStatus.Running)
+                            {
+                                ss.WriteString(Constants.STARTED_NOTI_STRING);
+                            }
+                        }
+                        else if (signalData["signal"] == "start")
                         {
                             _dnsServer.Start();
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
@@ -119,8 +137,14 @@ namespace VisafeService
                         {
                             string user_id = Helper.GetID();
                             ss.WriteString(user_id);
-                        }
-                    }
+                        } 
+                        //else if (signalData["signal"] == "open_form")
+                        //{
+                        //    ss.WriteString("recevied");
+                        //    string signalDataString = "signal << open_form";
+                        //    Helper.SendSignal(signalDataString);
+                        //}
+                    } 
                     catch (ThreadAbortException ex)
                     {
                         //do nothing

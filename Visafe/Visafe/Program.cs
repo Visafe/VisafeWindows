@@ -9,7 +9,7 @@ namespace Visafe
 {
     static class Program
     {
-        private static string appGuid = "858f363b-ed05-4159-86c2-e30713e2b64e";
+        private static string appId = "visafe-858f363b-ed05-4159-86c2-e30713e2b64e";
 
         /// <summary>
         /// The main entry point for the application.
@@ -17,7 +17,7 @@ namespace Visafe
         [STAThread]
         static void Main()
         {
-            using (Mutex mutex = new Mutex(false, "Global\\" + appGuid))
+            using (Mutex mutex = new Mutex(false, "Global\\" + appId))
             {
                 if (!mutex.WaitOne(0, false))
                 {

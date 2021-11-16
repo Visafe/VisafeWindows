@@ -31,31 +31,6 @@ namespace VisafeService
             Helper.ExecuteCmdCommand(flushDnsCmd);
         }
 
-        private bool PingCheckHealth(string domain)
-        {
-            int threshold = 5;
-            Ping myPing = new Ping();
-            PingReply reply;
-
-            for (int i = 0; i < threshold; i++)
-            {
-                try
-                {
-                    reply = myPing.Send(domain, 600);
-                    if (reply != null)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                    continue;
-                }
-            }
-
-            return false;
-        }
-
         public static NetworkInterface GetActiveEthernetOrWifiNetworkInterface()
         {
             //coditions:
@@ -213,24 +188,6 @@ namespace VisafeService
             }
 
             isOn = false;
-        }
-
-        private Dictionary<string, string> ParseDataString(string dataString)
-        {
-            Dictionary<string, string> result = new Dictionary<string, string>();
-            string[] dataArr = dataString.Split(';');
-
-            foreach (string field in dataArr)
-            {
-                field.Trim();   //remove spaces at the beginning and ending of the string
-
-                string[] delimeters = { "<<" };
-                string[] fieldArr = field.Split(delimeters, StringSplitOptions.RemoveEmptyEntries);
-
-                result[fieldArr[0].Trim()] = fieldArr[1].Trim();
-            }
-
-            return result;
         }
     }
 

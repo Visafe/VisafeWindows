@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -293,6 +294,32 @@ namespace VisafeService
             }
 
             return dohHost;
+        }
+
+        public static string SendSignal(string signal)
+        {
+            var pipeClient = new NamedPipeClientStream(".", Constants.VISAFE_GUI_PIPE, PipeDirection.InOut, PipeOptions.None);
+
+            string returnedSignal = null;
+            pipeClient.Connect();
+
+            var ss = new StreamString(pipeClient);
+
+            try
+            {
+                ss.WriteString(signal);
+                returnedSignal = ss.ReadString();
+            }
+            catch (Exception exc)
+            {
+                //_eventLog.WriteEntry(exc.Message, EventLogEntryType.Error);
+            }
+            finally
+            {
+                pipeClient.Close();
+            }
+
+            return returnedSignal;
         }
     }
 }
