@@ -2,5 +2,6 @@
     "stable" : {
         "version": "1.1.5",
         "url":"https://github.com/VisafeTeam/VisafeWindows/releases/download/v1.1.5/VisafeWindows-installer.exe"
+        "description":"- Thêm link hướng dẫn\n- Sửa chữa một số lỗi"
     }
 }
