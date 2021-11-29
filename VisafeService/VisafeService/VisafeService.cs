@@ -114,10 +114,52 @@ namespace VisafeService
                                 ss.WriteString(Constants.STARTED_NOTI_STRING);
                             }
                         }
-                        else if (signalData["signal"] == "start")
+                        //else if (signalData["signal"] == "start")
+                        //{
+                        //    _dnsServer.Start();
+                        //    ss.WriteString("received"); //recevie signal from client and return it back to confirm
+                        //}
+                        else if (signalData["signal"] == Constants.SECURITY_MODE)
                         {
-                            _dnsServer.Start();
+                            _dnsServer.Start(Constants.SECURITY_MODE_DOH);
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
+                        }
+                        else if (signalData["signal"] == Constants.FAMILY_MODE)
+                        {
+                            _dnsServer.Start(Constants.FAMILY_MODE_DOH);
+                            ss.WriteString("received"); //recevie signal from client and return it back to confirm
+                        }
+                        else if (signalData["signal"] == Constants.SECURITY_PLUS_MODE)
+                        {
+                            _dnsServer.Start(Constants.SECURITY_PLUS_MODE_DOH);
+                            ss.WriteString("received"); //recevie signal from client and return it back to confirm
+                        }
+                        else if (signalData["signal"] == Constants.CUSTOM_MODE)
+                        {
+                            string groupId = Helper.CheckDevice(Helper.GetID());
+
+                            if (groupId == "")
+                            {
+                                ss.WriteString("no_group");
+                            }
+
+                            _dnsServer.Start(Constants.CUSTOM_MODE_DOH);
+                            ss.WriteString(groupId);
+                        }
+                        else if (signalData["signal"] == "get_device_id")
+                        {
+                            ss.WriteString(Helper.GetID());
+                        }
+                        else if (signalData["signal"] == "check_group")
+                        {
+                            string groupId = Helper.CheckDevice(Helper.GetID());
+
+                            if (groupId == "")
+                            {
+                                ss.WriteString("no_group");
+                            }
+
+                            ss.WriteString(groupId);
                         }
                         else if (signalData["signal"] == "stop")
                         {

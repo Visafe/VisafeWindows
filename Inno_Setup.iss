@@ -354,9 +354,9 @@ Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; \
 
 [UninstallRun]
 Filename: {sys}\sc.exe; Parameters: "stop VisafeService" ; Flags: runhidden
-Filename: {sys}\taskkill.exe; Parameters: "/f /im {#MyAppExeName}"; Flags: skipifdoesntexist runhidden
-Filename: {sys}\taskkill.exe; Parameters: "/f /im dnsproxy.exe"; Flags: skipifdoesntexist runhidden
-Filename: {sys}\taskkill.exe; Parameters: "/f /im VisafeService.exe"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\taskkill.exe; Parameters: "/im {#MyAppExeName} /t /f"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\taskkill.exe; Parameters: "/im dnsproxy.exe /t /f"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\taskkill.exe; Parameters: "/im VisafeService.exe /t /f"; Flags: skipifdoesntexist runhidden
 Filename: {sys}\sc.exe; Parameters: "delete VisafeService" ; Flags: runhidden
 
 [UninstallDelete]
@@ -394,7 +394,7 @@ var
   ResultCode1: Integer;
   ResultCode2: Integer;
 begin
-    Exec('sc.exe', 'stop ' + 'VisafeService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode1);
+    Exec('sc.exe QUERY | FIND "SERVICE_NAME: VisafeService" && IF %ERRORLEVEL% EQU 0 NET', 'stop ' + 'VisafeService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode1);
     Exec('taskkill.exe', '/f /im VisafeService.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode2);
 end;
 

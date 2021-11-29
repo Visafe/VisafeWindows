@@ -88,58 +88,6 @@ namespace Visafe
             return giatri;
         }
 
-        //if ID is avalable, it will not generate anymore. if not, it will generate new userID and save in file config 
-        public string GetID()
-        {
-            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string visafeFolder = Path.Combine(appDataFolder, "Visafe");
-
-            if (Directory.Exists(visafeFolder) == false)
-            {
-                Directory.CreateDirectory(visafeFolder);
-            }
-
-            string userIdConfig = Path.Combine(visafeFolder, Constant.USERID_CONFIG_FILE);
-
-            string giatri;
-
-            if (File.Exists(userIdConfig))
-            {
-                using (StreamReader sr = new StreamReader(userIdConfig))
-                {
-                    giatri = sr.ReadLine();
-                    sr.Close();
-                }
-
-                if (giatri?.Length == null || giatri == "")
-                {
-                    giatri = GetDeviceId();
-                    using (StreamWriter sw = new StreamWriter(userIdConfig))
-                    {
-                        sw.WriteLine(giatri);
-                        sw.Close();
-                    }
-                    return giatri;
-                }
-                else
-                {
-                    return giatri;
-                }
-            }
-            else
-            {
-                File.Create(userIdConfig).Dispose();
-                giatri = GetDeviceId();
-                using (StreamWriter sw = new StreamWriter(userIdConfig))
-                {
-                    sw.WriteLine(giatri);
-                    sw.Close();
-                }
-            }
-
-            return giatri;
-        }
-
         //generate random string for id user
         public string random_id()
         {

@@ -71,6 +71,36 @@ namespace Visafe.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap logo_visafe {
+            get {
+                object obj = ResourceManager.GetObject("logo-visafe", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap logo_visafe1 {
+            get {
+                object obj = ResourceManager.GetObject("logo-visafe1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap small_logo {
+            get {
+                object obj = ResourceManager.GetObject("small-logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Icon similar to (Icon).
         /// </summary>
         public static System.Drawing.Icon turnoff {
@@ -87,6 +117,16 @@ namespace Visafe.Properties {
             get {
                 object obj = ResourceManager.GetObject("turnon", resourceCulture);
                 return ((System.Drawing.Icon)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        public static System.Drawing.Bitmap visafe_logo {
+            get {
+                object obj = ResourceManager.GetObject("visafe_logo", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

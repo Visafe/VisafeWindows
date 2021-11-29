@@ -144,16 +144,23 @@ namespace VisafeService
             flushDNS();
         }
 
-        public void Start()
+        public void Start(string DohServer)
         {
+            //reset the dnsproxy before continue
+            if (isOn == true) {
+                Stop();
+                isOn = false;
+            }
+
             string user_id = Helper.GetID();
             var dnsCryptProxyExecutablePath = Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "dnsproxy.exe");
 
             //get the best host for DOH server from routing API
-            string dohHost = Helper.GetDohHost();
+            //string dohHost = Helper.GetDohHost();
 
             //source code dnsproxy: https://github.com/AdguardTeam/dnsproxy
-            string arguments = " -u https://" + dohHost + "/dns-query/" + user_id + Constants.DNSPROXY_ARGS;
+            //string arguments = " -u https://" + dohHost + "/dns-query/" + user_id + Constants.DNSPROXY_ARGS;
+            string arguments = " -u https://" + DohServer + "/dns-query/" + user_id + Constants.DNSPROXY_ARGS;
 
             _dnsProxyProcess.StartInfo.UseShellExecute = false;
             _dnsProxyProcess.StartInfo.FileName = dnsCryptProxyExecutablePath;
@@ -172,7 +179,26 @@ namespace VisafeService
         {
             UnsetDNS();
 
+            try
+            {
+                _dnsProxyProcess.Kill();
+            }
+            catch (Exception e)
+            {
+            }
+
             isOn = false;
+        }
+
+        public void KillDnsProxy()
+        {
+            try
+            {
+                _dnsProxyProcess.Kill();
+            }
+            catch (Exception e)
+            {
+            }
         }
 
         public void Exit()

@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.Security.AccessControl;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Visafe
 {
@@ -20,9 +21,11 @@ namespace Visafe
     {
         private EventLog _eventLog;
 
-        private DeviceInfoObtainer deviceInfoObtainer = new DeviceInfoObtainer();
-
         private Updater _updater;
+
+        private string _currentMode;
+
+        private Form2 _custSettForm;
 
         public Form1()
         {
@@ -30,6 +33,11 @@ namespace Visafe
             _eventLog.Source = "Visafe";
 
             _updater = new Updater(Constant.VERSION_INFO_URL);
+
+            _currentMode = Helper.LoadCurrentMode();
+
+            _custSettForm = new Form2();
+            _custSettForm.Hide();
 
             InitializeComponent();
         }
@@ -39,13 +47,20 @@ namespace Visafe
         {
             notifyIcon1.Visible = false;
 
-            bool started = startService();
+            //bool started = startService(_currentMode);
 
-            if (started == false)
+            var task = Task.Run(() => startService(_currentMode));
+            if (task.Wait(TimeSpan.FromMinutes(5)))
             {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                notifyIcon1.Icon = Resources.turnon;
             }
+            else
+            {
+                MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Application.Exit();
+            }
+
+            setCheckBoxOnStart(_currentMode);
 
             notifyIcon1.Visible = true;
             item_turnoff.Visible = true;
@@ -53,11 +68,6 @@ namespace Visafe
             Hide();
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
-
-            //string user_id = this.deviceInfoObtainer.GetID();
-            string invitingURL = this.deviceInfoObtainer.GetUrl();
-
-            text_url.Text = invitingURL;
 
             checkForUpdate();
         }
@@ -67,185 +77,8 @@ namespace Visafe
             Hide();
         }
 
-        public void SendInvitingUrl()
-        {
-            string url = text_url.Text;
-
-            status_label.Text = "Đang lưu...";
-
-            string Pattern = @"^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=. ]+$";
-            Regex Rgx = new Regex(Pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-            if ((url == "") || !url.Contains("http"))
-            {
-                status_label.Text = "";
-                MessageBox.Show("URL không hợp lệ", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else if (!Rgx.IsMatch(url))
-            {
-                status_label.Text = "";
-                MessageBox.Show("URL không hợp lệ", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                string realUrl = Helper.UrlLengthen(url);
-
-                string deviceId;
-                string groupId;
-                string groupName;
-                string deviceName;
-                string macAddress;
-                string ipAddress;
-                string deviceType;
-                string deviceOwner;
-                string deviceDetail;
-
-                //deviceId = this.deviceInfoObtainer.GetID();
-
-                string signalDataString = "signal << get_id;";
-                var tempId = Helper.SendSignal(signalDataString);
-
-                if (tempId != null)
-                {
-                    deviceId = tempId;
-                }
-                else
-                {
-                    deviceId = "";
-                }
-
-                try
-                {
-                    Uri myUri = new Uri(realUrl);
-                    groupId = HttpUtility.ParseQueryString(myUri.Query).Get("groupId");
-                    groupName = HttpUtility.ParseQueryString(myUri.Query).Get("groupName");
-                }
-                catch
-                {
-                    groupId = "";
-                    groupName = "";
-                }
-
-
-                try
-                {
-                    deviceName = System.Environment.GetEnvironmentVariable("COMPUTERNAME");
-                }
-                catch
-                {
-                    deviceName = "unknown";
-                }
-
-                try
-                {
-                    macAddress = DeviceInfoObtainer.GetMac();
-                }
-                catch
-                {
-                    macAddress = "unknown";
-                }
-
-                try
-                {
-                    ipAddress = DeviceInfoObtainer.GetIpAddress();
-                }
-                catch
-                {
-                    ipAddress = "unknown";
-                }
-
-                deviceType = "Windows";
-
-                try
-                {
-                    deviceOwner = Environment.UserName;
-                }
-                catch
-                {
-                    deviceOwner = "unknown";
-                }
-
-                try
-                {
-                    deviceDetail = Environment.OSVersion.ToString();
-                }
-                catch
-                {
-                    deviceDetail = "unknown";
-                }
-
-                //establish secure channel
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                var client = new RestClient(realUrl);
-                var request = new RestRequest(Method.POST);
-                request.RequestFormat = DataFormat.Json;
-
-                try
-                {
-                    request.AddJsonBody(new
-                    {
-                        deviceId = deviceId,
-                        groupName = groupName,
-                        groupId = groupId,
-                        deviceName = deviceName,
-                        macAddress = macAddress,
-                        ipAddress = ipAddress,
-                        deviceType = deviceType,
-                        deviceOwner = deviceOwner,
-                        deviceDetail = deviceDetail,
-                    });
-
-                    var response = client.Execute(request);
-
-                    JoiningGroupResp respContent = JsonConvert.DeserializeObject<JoiningGroupResp>(response.Content);
-
-                    //var responseString = response.Content.ReadAsStringAsync();
-
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        status_label.Text = "";
-                        MessageBox.Show(respContent.local_msg, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    else
-                    {
-                        string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                        string visafeFolder = Path.Combine(appDataFolder, "Visafe");
-
-                        if (Directory.Exists(visafeFolder) == false)
-                        {
-                            Directory.CreateDirectory(visafeFolder);
-                        }
-
-                        string urlConfig = Path.Combine(visafeFolder, Constant.URL_CONFIG_FILE);
-
-                        if (!File.Exists(urlConfig))
-                        {
-                            File.Create(urlConfig).Dispose();
-                        }
-
-                        FileInfo fi = new FileInfo(urlConfig);
-                        using (TextWriter writer = new StreamWriter(fi.Open(FileMode.Truncate)))
-                        {
-                            writer.WriteLine(url);
-                            writer.Close();
-                        }
-
-                        status_label.Text = "";
-                        MessageBox.Show(Constant.SAVING_SUCCESS_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
-                catch (Exception e)
-                {
-                    status_label.Text = "";
-                    Console.WriteLine(e.Message);
-                    MessageBox.Show(Constant.SAVING_ERROR_MSG + "\n\nURL không hợp lệ hoặc thiết bị đã tham gia vào nhóm hoặc thiết bị đang ở nhóm khác", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
-        }
-
         //function used to start service
-        private bool startService()
+        private bool startService(string mode)
         {
             string signalDataString = "signal << check_start";
             string sendResult = Helper.SendSignal(signalDataString);
@@ -256,21 +89,62 @@ namespace Visafe
                 elapsed += 2000;
                 if (elapsed > 8000)
                 {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return false;
                 }
             }
 
-            signalDataString = "signal << start;";
-
-            sendResult = Helper.SendSignal(signalDataString);
-
-            if (sendResult == null)
+            if (mode != Constant.CUSTOM_MODE)
             {
-                return false;
-            }
+                signalDataString = "signal << " + mode + ";";
+
+                sendResult = Helper.SendSignal(signalDataString);
+
+                if (sendResult == null || sendResult == "error")
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            } 
             else
             {
-                return true;
+                signalDataString = "signal << " + mode + ";";
+
+                sendResult = Helper.SendSignal(signalDataString);
+
+                if (sendResult == null)
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                else if (sendResult == "no_group")
+                {
+                    signalDataString = "signal << " + Constant.SECURITY_MODE + ";";
+
+                    sendResult = Helper.SendSignal(signalDataString);
+
+                    if (sendResult == null || sendResult == "error")
+                    {
+                        MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        stopService();
+                        return false;
+                    }
+                    else
+                    {
+                        setCheckBoxOnStart(Constant.SECURITY_MODE);
+                        MessageBox.Show("Thiết bị chưa tham gia nhóm, vui lòng nhấn Cài đặt để thiết lập. \n\nThiết lập sẽ được chuyển về chế độ An toàn thông tin (mặc định).", 
+                            Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return true;
+                    }
+                }
+                else
+                {
+                    return true;
+                }
             }
         }
 
@@ -292,6 +166,7 @@ namespace Visafe
         {
             string signalDataString = "signal << exit;";
 
+            //var sendResult = Helper.SendSignal(signalDataString);
             var sendResult = Helper.SendSignal(signalDataString);
 
             if (sendResult == null)
@@ -352,9 +227,7 @@ namespace Visafe
         {
             if (e.Button == MouseButtons.Left)
             {
-                Show();
-                this.ShowInTaskbar = true;
-                WindowState = FormWindowState.Normal;
+                FormDisplay();
             }
         }
 
@@ -363,19 +236,23 @@ namespace Visafe
         private void item_turnon_Click(object sender, EventArgs e)
         {
             //start service
-            bool started = startService();
+            //bool started = startService(this._currentMode);
 
-            if (started == false)
+            var task = Task.Run(() => startService(_currentMode));
+            if (task.Wait(TimeSpan.FromSeconds(15)))
             {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //start program
+                notifyIcon1.Icon = Resources.turnon;
+
+                item_turnoff.Visible = true;
+                item_turnon.Visible = false;
+                ShowInTaskbar = false;
+            }
+            else
+            {
+                MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
 
-            //start program
-            notifyIcon1.Icon = Resources.turnon;
-
-            item_turnoff.Visible = true;
-            item_turnon.Visible = false;
-            ShowInTaskbar = false;
             //WindowState = FormWindowState.Minimized;
             Hide();
         }
@@ -398,8 +275,15 @@ namespace Visafe
         {
             if (MessageBox.Show("Thiết bị của bạn có thể bị ảnh hưởng bởi tấn công mạng. \nBạn muốn tắt bảo vệ?", "Bạn đang tắt chế độ bảo vệ!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             {
-                exitService();
-                Application.Exit();
+                var task = Task.Run(() => exitService());
+                if (task.Wait(TimeSpan.FromSeconds(15)))
+                {
+                    Application.Exit();
+                }
+                else
+                {
+                    Application.Exit();
+                }
             }
         }
 
@@ -412,9 +296,30 @@ namespace Visafe
 
         private void button_save_Click(object sender, EventArgs e)
         {
-            //Hide();
-            //WindowState = FormWindowState.Minimized;
-            SendInvitingUrl();
+            button_save.Text = "Đang lưu...";
+            this.Refresh();
+
+            //bool started = startService(this._currentMode);
+            bool started = false;
+
+            var task = Task.Run(() => startService(_currentMode));
+            if (task.Wait(TimeSpan.FromSeconds(15)))
+            {
+                started = task.Result;
+            }
+            else
+            {
+                MessageBox.Show(Constant.ERR_SAVING_CONFIG_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //Application.Exit();
+            }
+
+            if (started == true)
+            {
+                SaveCurrentMode(_currentMode);
+                MessageBox.Show("Đã lưu thiết lập", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            button_save.Text = "Lưu";
+            this.Refresh();
         }
 
         private void button_cancel_Click(object sender, EventArgs e)
@@ -433,11 +338,138 @@ namespace Visafe
             System.Diagnostics.Process.Start(Constant.VISAFE_DOC_URL);
         }
 
-        private void FormDisplay(object state)
+        private void FormDisplay()
         {
+            setCheckBox(this._currentMode);
             this.Show();
             this.ShowInTaskbar = true;
             this.WindowState = FormWindowState.Normal;
+        }
+
+        private void securityCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            //this._currentMode = Constant.SECURITY_MODE;
+            CheckBox cb = (CheckBox)sender;
+            if (cb.CheckState == CheckState.Checked)
+            {
+                setCheckBox(Constant.SECURITY_MODE);
+            }
+        }
+
+        private void familyCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            //this._currentMode = Constant.FAMILY_MODE;
+            CheckBox cb = (CheckBox)sender;
+            if (cb.CheckState == CheckState.Checked)
+            {
+                setCheckBox(Constant.FAMILY_MODE);
+            }
+        }
+
+        private void securityPlusCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            //this._currentMode = Constant.SECURITY_PLUS_MODE;
+            CheckBox cb = (CheckBox)sender;
+            if (cb.CheckState == CheckState.Checked)
+            {
+                setCheckBox(Constant.SECURITY_PLUS_MODE);
+            }
+        }
+
+        private void customCheckBox_CheckedChanged(object sender, EventArgs e)
+        {
+            //this._currentMode = Constant.CUSTOM_MODE;
+            CheckBox cb = (CheckBox)sender;
+
+            if (cb.CheckState == CheckState.Checked)
+            {
+                setCheckBox(Constant.CUSTOM_MODE);
+            }
+        }
+
+        private void customSettingButton_Click(object sender, EventArgs e)
+        {
+            Form2 settingForm = new Form2();
+            settingForm.ShowDialog();
+        }
+
+        private void setCheckBox(string mode)
+        {
+            switch (mode) {
+                case Constant.SECURITY_MODE:
+                    _currentMode = Constant.SECURITY_MODE;
+                    this.familyCheckBox.Checked = false;
+                    this.securityPlusCheckBox.Checked = false;
+                    this.customCheckBox.Checked = false;
+                    break;
+                case Constant.FAMILY_MODE:
+                    _currentMode = Constant.FAMILY_MODE;
+                    this.securityCheckBox.Checked = false;
+                    this.securityPlusCheckBox.Checked = false;
+                    this.customCheckBox.Checked = false;
+                    break;
+                case Constant.SECURITY_PLUS_MODE:
+                    _currentMode = Constant.SECURITY_PLUS_MODE;
+                    this.securityCheckBox.Checked = false;
+                    this.familyCheckBox.Checked = false;
+                    this.customCheckBox.Checked = false;
+                    break;
+                case Constant.CUSTOM_MODE:
+                    _currentMode = Constant.CUSTOM_MODE;
+                    this.securityCheckBox.Checked = false;
+                    this.familyCheckBox.Checked = false;
+                    this.securityPlusCheckBox.Checked = false;
+                    break;
+            }
+        }
+
+        private void setCheckBoxOnStart(string mode)
+        {
+            switch (mode)
+            {
+                case Constant.SECURITY_MODE:
+                    this._currentMode = Constant.SECURITY_MODE;
+                    this.securityCheckBox.Checked = true;
+                    this.familyCheckBox.Checked = false;
+                    this.securityPlusCheckBox.Checked = false;
+                    this.customCheckBox.Checked = false;
+                    break;
+                case Constant.FAMILY_MODE:
+                    this._currentMode = Constant.FAMILY_MODE;
+                    this.securityCheckBox.Checked = false;
+                    this.familyCheckBox.Checked = true; 
+                    this.securityPlusCheckBox.Checked = false;
+                    this.customCheckBox.Checked = false;
+                    break;
+                case Constant.SECURITY_PLUS_MODE:
+                    this._currentMode = Constant.SECURITY_PLUS_MODE;
+                    this.securityCheckBox.Checked = false;
+                    this.familyCheckBox.Checked = false;
+                    this.securityPlusCheckBox.Checked = true;
+                    this.customCheckBox.Checked = false;
+                    break;
+                case Constant.CUSTOM_MODE:
+                    this._currentMode = Constant.CUSTOM_MODE;
+                    this.securityCheckBox.Checked = false;
+                    this.familyCheckBox.Checked = false;
+                    this.securityPlusCheckBox.Checked = false;
+                    this.customCheckBox.Checked = true;
+                    break;
+            }
+        }
+
+        private void helpLink_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo helpSite = new ProcessStartInfo(Constant.HELP_SITE_URL);
+                Process.Start(helpSite);
+            }
+            catch
+            {
+                MessageBox.Show("Không thể đi đến URL", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            
         }
     }
 }

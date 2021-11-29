@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Pipes;
 using System.Net;
 
@@ -95,6 +96,68 @@ namespace Visafe
 
                     result[fieldArr[0].Trim()] = fieldArr[1].Trim();
                 }
+            }
+
+            return result;
+        }
+
+        public static void SaveCurrentMode(string mode)
+        {
+            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string visafeFolder = Path.Combine(appDataFolder, "Visafe");
+
+            if (Directory.Exists(visafeFolder) == false)
+            {
+                Directory.CreateDirectory(visafeFolder);
+            }
+
+            string settingModeFile = Path.Combine(visafeFolder, Constant.SETTING_MODE_FILE);
+
+            if (!File.Exists(settingModeFile))
+            {
+                File.Create(settingModeFile).Dispose();
+            }
+
+            using (StreamWriter sw = new StreamWriter(settingModeFile, false))
+            {
+                sw.WriteLine(mode);
+                sw.Close();
+            }
+        }
+
+        public static string LoadCurrentMode()
+        {
+            string result = Constant.SECURITY_MODE;
+
+            string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string visafeFolder = Path.Combine(appDataFolder, "Visafe");
+
+            if (Directory.Exists(visafeFolder) == false)
+            {
+                Directory.CreateDirectory(visafeFolder);
+            }
+
+            string settingModeFile = Path.Combine(visafeFolder, Constant.SETTING_MODE_FILE);
+
+            if (File.Exists(settingModeFile))
+            {
+                using (StreamReader sr = new StreamReader(settingModeFile))
+                {
+                    result = sr.ReadLine().Trim();
+                    sr.Close();
+                }
+
+                if (result != Constant.SECURITY_MODE && result != Constant.FAMILY_MODE && result != Constant.SECURITY_PLUS_MODE && result != Constant.CUSTOM_MODE)
+                {
+                    result = Constant.SECURITY_MODE;
+                }
+
+                return result;
+            }
+            else
+            {
+                SaveCurrentMode(Constant.SECURITY_MODE);
+                return Constant.SECURITY_MODE;
             }
 
             return result;
