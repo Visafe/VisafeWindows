@@ -41,19 +41,19 @@
             this.status_label = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.securityRadioButton = new System.Windows.Forms.RadioButton();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.securityCheckBox = new System.Windows.Forms.CheckBox();
             this.panel2 = new System.Windows.Forms.Panel();
-            this.familyCheckBox = new System.Windows.Forms.CheckBox();
+            this.familyRadioButton = new System.Windows.Forms.RadioButton();
             this.textBox2 = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
-            this.securityPlusCheckBox = new System.Windows.Forms.CheckBox();
+            this.securityPlusRadioButton = new System.Windows.Forms.RadioButton();
             this.textBox3 = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.panel4 = new System.Windows.Forms.Panel();
+            this.customRadioButton = new System.Windows.Forms.RadioButton();
             this.customSettingButton = new System.Windows.Forms.Button();
-            this.customCheckBox = new System.Windows.Forms.CheckBox();
             this.textBox4 = new System.Windows.Forms.TextBox();
             this.label6 = new System.Windows.Forms.Label();
             this.panel5 = new System.Windows.Forms.Panel();
@@ -166,12 +166,25 @@
             // 
             this.panel1.BackColor = System.Drawing.Color.White;
             this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel1.Controls.Add(this.securityRadioButton);
             this.panel1.Controls.Add(this.textBox1);
             this.panel1.Controls.Add(this.label4);
             this.panel1.Location = new System.Drawing.Point(16, 101);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(631, 100);
             this.panel1.TabIndex = 15;
+            // 
+            // securityRadioButton
+            // 
+            this.securityRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.securityRadioButton.AutoSize = true;
+            this.securityRadioButton.Location = new System.Drawing.Point(520, 40);
+            this.securityRadioButton.Name = "securityRadioButton";
+            this.securityRadioButton.Size = new System.Drawing.Size(17, 16);
+            this.securityRadioButton.TabIndex = 12;
+            this.securityRadioButton.TabStop = true;
+            this.securityRadioButton.UseVisualStyleBackColor = true;
+            this.securityRadioButton.CheckedChanged += new System.EventHandler(this.securityRadioButton_CheckedChanged);
             // 
             // textBox1
             // 
@@ -185,21 +198,11 @@
             this.textBox1.TabIndex = 11;
             this.textBox1.Text = "Bảo vệ phần lớn các hình thức tấn công mạng, phù hợp cho mọi người";
             // 
-            // securityCheckBox
-            // 
-            this.securityCheckBox.AutoSize = true;
-            this.securityCheckBox.Location = new System.Drawing.Point(552, 141);
-            this.securityCheckBox.Name = "securityCheckBox";
-            this.securityCheckBox.Size = new System.Drawing.Size(18, 17);
-            this.securityCheckBox.TabIndex = 14;
-            this.securityCheckBox.UseVisualStyleBackColor = true;
-            this.securityCheckBox.CheckedChanged += new System.EventHandler(this.securityCheckBox_CheckedChanged);
-            // 
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.Color.White;
             this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panel2.Controls.Add(this.familyCheckBox);
+            this.panel2.Controls.Add(this.familyRadioButton);
             this.panel2.Controls.Add(this.textBox2);
             this.panel2.Controls.Add(this.label8);
             this.panel2.Location = new System.Drawing.Point(16, 207);
@@ -207,15 +210,17 @@
             this.panel2.Size = new System.Drawing.Size(631, 100);
             this.panel2.TabIndex = 16;
             // 
-            // familyCheckBox
+            // familyRadioButton
             // 
-            this.familyCheckBox.AutoSize = true;
-            this.familyCheckBox.Location = new System.Drawing.Point(534, 41);
-            this.familyCheckBox.Name = "familyCheckBox";
-            this.familyCheckBox.Size = new System.Drawing.Size(18, 17);
-            this.familyCheckBox.TabIndex = 20;
-            this.familyCheckBox.UseVisualStyleBackColor = true;
-            this.familyCheckBox.CheckedChanged += new System.EventHandler(this.familyCheckBox_CheckedChanged);
+            this.familyRadioButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)));
+            this.familyRadioButton.AutoSize = true;
+            this.familyRadioButton.Location = new System.Drawing.Point(520, 41);
+            this.familyRadioButton.Name = "familyRadioButton";
+            this.familyRadioButton.Size = new System.Drawing.Size(17, 16);
+            this.familyRadioButton.TabIndex = 21;
+            this.familyRadioButton.TabStop = true;
+            this.familyRadioButton.UseVisualStyleBackColor = true;
+            this.familyRadioButton.CheckedChanged += new System.EventHandler(this.familyRadioButton_CheckedChanged);
             // 
             // textBox2
             // 
@@ -243,7 +248,7 @@
             // 
             this.panel3.BackColor = System.Drawing.Color.White;
             this.panel3.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.panel3.Controls.Add(this.securityPlusCheckBox);
+            this.panel3.Controls.Add(this.securityPlusRadioButton);
             this.panel3.Controls.Add(this.textBox3);
             this.panel3.Controls.Add(this.label9);
             this.panel3.Location = new System.Drawing.Point(16, 313);
@@ -251,15 +256,16 @@
             this.panel3.Size = new System.Drawing.Size(631, 100);
             this.panel3.TabIndex = 17;
             // 
-            // securityPlusCheckBox
+            // securityPlusRadioButton
             // 
-            this.securityPlusCheckBox.AutoSize = true;
-            this.securityPlusCheckBox.Location = new System.Drawing.Point(534, 40);
-            this.securityPlusCheckBox.Name = "securityPlusCheckBox";
-            this.securityPlusCheckBox.Size = new System.Drawing.Size(18, 17);
-            this.securityPlusCheckBox.TabIndex = 15;
-            this.securityPlusCheckBox.UseVisualStyleBackColor = true;
-            this.securityPlusCheckBox.CheckedChanged += new System.EventHandler(this.securityPlusCheckBox_CheckedChanged);
+            this.securityPlusRadioButton.AutoSize = true;
+            this.securityPlusRadioButton.Location = new System.Drawing.Point(520, 40);
+            this.securityPlusRadioButton.Name = "securityPlusRadioButton";
+            this.securityPlusRadioButton.Size = new System.Drawing.Size(17, 16);
+            this.securityPlusRadioButton.TabIndex = 22;
+            this.securityPlusRadioButton.TabStop = true;
+            this.securityPlusRadioButton.UseVisualStyleBackColor = true;
+            this.securityPlusRadioButton.CheckedChanged += new System.EventHandler(this.securityPlusRadioButton_CheckedChanged);
             // 
             // textBox3
             // 
@@ -287,14 +293,25 @@
             // 
             this.panel4.BackColor = System.Drawing.Color.White;
             this.panel4.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.panel4.Controls.Add(this.customRadioButton);
             this.panel4.Controls.Add(this.customSettingButton);
-            this.panel4.Controls.Add(this.customCheckBox);
             this.panel4.Controls.Add(this.textBox4);
             this.panel4.Controls.Add(this.label6);
             this.panel4.Location = new System.Drawing.Point(16, 419);
             this.panel4.Name = "panel4";
             this.panel4.Size = new System.Drawing.Size(631, 143);
             this.panel4.TabIndex = 18;
+            // 
+            // customRadioButton
+            // 
+            this.customRadioButton.AutoSize = true;
+            this.customRadioButton.Location = new System.Drawing.Point(520, 60);
+            this.customRadioButton.Name = "customRadioButton";
+            this.customRadioButton.Size = new System.Drawing.Size(17, 16);
+            this.customRadioButton.TabIndex = 23;
+            this.customRadioButton.TabStop = true;
+            this.customRadioButton.UseVisualStyleBackColor = true;
+            this.customRadioButton.CheckedChanged += new System.EventHandler(this.customRadioButton_CheckedChanged);
             // 
             // customSettingButton
             // 
@@ -307,16 +324,6 @@
             this.customSettingButton.Text = "Cài đặt";
             this.customSettingButton.UseVisualStyleBackColor = true;
             this.customSettingButton.Click += new System.EventHandler(this.customSettingButton_Click);
-            // 
-            // customCheckBox
-            // 
-            this.customCheckBox.AutoSize = true;
-            this.customCheckBox.Location = new System.Drawing.Point(534, 62);
-            this.customCheckBox.Name = "customCheckBox";
-            this.customCheckBox.Size = new System.Drawing.Size(18, 17);
-            this.customCheckBox.TabIndex = 16;
-            this.customCheckBox.UseVisualStyleBackColor = true;
-            this.customCheckBox.CheckedChanged += new System.EventHandler(this.customCheckBox_CheckedChanged);
             // 
             // textBox4
             // 
@@ -392,7 +399,6 @@
             this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(660, 632);
             this.Controls.Add(this.helpLink);
-            this.Controls.Add(this.securityCheckBox);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.panel4);
             this.Controls.Add(this.panel3);
@@ -450,14 +456,14 @@
         private System.Windows.Forms.TextBox textBox4;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Panel panel5;
-        private System.Windows.Forms.CheckBox securityCheckBox;
-        private System.Windows.Forms.CheckBox familyCheckBox;
-        private System.Windows.Forms.CheckBox securityPlusCheckBox;
-        private System.Windows.Forms.CheckBox customCheckBox;
         private System.Windows.Forms.Button customSettingButton;
         private System.Windows.Forms.Label helpLink;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.RadioButton securityRadioButton;
+        private System.Windows.Forms.RadioButton familyRadioButton;
+        private System.Windows.Forms.RadioButton securityPlusRadioButton;
+        private System.Windows.Forms.RadioButton customRadioButton;
     }
 }
 

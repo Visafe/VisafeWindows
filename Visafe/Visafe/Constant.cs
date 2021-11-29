@@ -26,6 +26,6 @@ namespace Visafe
         public const string CUSTOM_MODE = "custom";
 
         public const string ERR_START_SERVICE_MSG = "Không thể khởi động Visafe";
-        public const string ERR_SAVING_CONFIG_MSG = "Không thể khởi động Visafe";
+        public const string ERR_SAVING_CONFIG_MSG = "Không thể lưu thiết lập";
     }
 }

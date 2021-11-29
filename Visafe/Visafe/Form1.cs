@@ -310,7 +310,6 @@ namespace Visafe
             else
             {
                 MessageBox.Show(Constant.ERR_SAVING_CONFIG_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                //Application.Exit();
             }
 
             if (started == true)
@@ -346,51 +345,46 @@ namespace Visafe
             this.WindowState = FormWindowState.Normal;
         }
 
-        private void securityCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void customSettingButton_Click(object sender, EventArgs e)
         {
-            //this._currentMode = Constant.SECURITY_MODE;
-            CheckBox cb = (CheckBox)sender;
-            if (cb.CheckState == CheckState.Checked)
+            Form2 settingForm = new Form2();
+            settingForm.ShowDialog();
+        }
+
+        private void securityRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
             {
                 setCheckBox(Constant.SECURITY_MODE);
             }
         }
 
-        private void familyCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void familyRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            //this._currentMode = Constant.FAMILY_MODE;
-            CheckBox cb = (CheckBox)sender;
-            if (cb.CheckState == CheckState.Checked)
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
             {
                 setCheckBox(Constant.FAMILY_MODE);
             }
         }
 
-        private void securityPlusCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void securityPlusRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            //this._currentMode = Constant.SECURITY_PLUS_MODE;
-            CheckBox cb = (CheckBox)sender;
-            if (cb.CheckState == CheckState.Checked)
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
             {
                 setCheckBox(Constant.SECURITY_PLUS_MODE);
             }
         }
 
-        private void customCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void customRadioButton_CheckedChanged(object sender, EventArgs e)
         {
-            //this._currentMode = Constant.CUSTOM_MODE;
-            CheckBox cb = (CheckBox)sender;
-
-            if (cb.CheckState == CheckState.Checked)
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
             {
                 setCheckBox(Constant.CUSTOM_MODE);
             }
-        }
-
-        private void customSettingButton_Click(object sender, EventArgs e)
-        {
-            Form2 settingForm = new Form2();
-            settingForm.ShowDialog();
         }
 
         private void setCheckBox(string mode)
@@ -398,27 +392,27 @@ namespace Visafe
             switch (mode) {
                 case Constant.SECURITY_MODE:
                     _currentMode = Constant.SECURITY_MODE;
-                    this.familyCheckBox.Checked = false;
-                    this.securityPlusCheckBox.Checked = false;
-                    this.customCheckBox.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
                     break;
                 case Constant.FAMILY_MODE:
                     _currentMode = Constant.FAMILY_MODE;
-                    this.securityCheckBox.Checked = false;
-                    this.securityPlusCheckBox.Checked = false;
-                    this.customCheckBox.Checked = false;
+                    this.securityRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
                     break;
                 case Constant.SECURITY_PLUS_MODE:
                     _currentMode = Constant.SECURITY_PLUS_MODE;
-                    this.securityCheckBox.Checked = false;
-                    this.familyCheckBox.Checked = false;
-                    this.customCheckBox.Checked = false;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
                     break;
                 case Constant.CUSTOM_MODE:
                     _currentMode = Constant.CUSTOM_MODE;
-                    this.securityCheckBox.Checked = false;
-                    this.familyCheckBox.Checked = false;
-                    this.securityPlusCheckBox.Checked = false;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
                     break;
             }
         }
@@ -429,31 +423,31 @@ namespace Visafe
             {
                 case Constant.SECURITY_MODE:
                     this._currentMode = Constant.SECURITY_MODE;
-                    this.securityCheckBox.Checked = true;
-                    this.familyCheckBox.Checked = false;
-                    this.securityPlusCheckBox.Checked = false;
-                    this.customCheckBox.Checked = false;
+                    this.securityRadioButton.Checked = true;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
                     break;
                 case Constant.FAMILY_MODE:
                     this._currentMode = Constant.FAMILY_MODE;
-                    this.securityCheckBox.Checked = false;
-                    this.familyCheckBox.Checked = true; 
-                    this.securityPlusCheckBox.Checked = false;
-                    this.customCheckBox.Checked = false;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = true;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
                     break;
                 case Constant.SECURITY_PLUS_MODE:
                     this._currentMode = Constant.SECURITY_PLUS_MODE;
-                    this.securityCheckBox.Checked = false;
-                    this.familyCheckBox.Checked = false;
-                    this.securityPlusCheckBox.Checked = true;
-                    this.customCheckBox.Checked = false;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = true;
+                    this.customRadioButton.Checked = false;
                     break;
                 case Constant.CUSTOM_MODE:
                     this._currentMode = Constant.CUSTOM_MODE;
-                    this.securityCheckBox.Checked = false;
-                    this.familyCheckBox.Checked = false;
-                    this.securityPlusCheckBox.Checked = false;
-                    this.customCheckBox.Checked = true;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = true;
                     break;
             }
         }
