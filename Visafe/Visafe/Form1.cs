@@ -60,7 +60,7 @@ namespace Visafe
                 Application.Exit();
             }
 
-            setCheckBoxOnStart(_currentMode);
+            setRadioButtonAndChangeState(_currentMode);
 
             notifyIcon1.Visible = true;
             item_turnoff.Visible = true;
@@ -135,7 +135,7 @@ namespace Visafe
                     }
                     else
                     {
-                        setCheckBoxOnStart(Constant.SECURITY_MODE);
+                        setRadioButtonAndChangeState(Constant.SECURITY_MODE);
                         MessageBox.Show("Thiết bị chưa tham gia nhóm, vui lòng nhấn Cài đặt để thiết lập. \n\nThiết lập sẽ được chuyển về chế độ An toàn thông tin (mặc định).", 
                             Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return true;
@@ -289,9 +289,11 @@ namespace Visafe
 
         private void openSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Show();
-            this.ShowInTaskbar = true;
-            WindowState = FormWindowState.Normal;
+            //setRadioButton(this._currentMode);
+            //Show();
+            //this.ShowInTaskbar = true;
+            //WindowState = FormWindowState.Normal;
+            FormDisplay();
         }
 
         private void button_save_Click(object sender, EventArgs e)
@@ -339,7 +341,10 @@ namespace Visafe
 
         private void FormDisplay()
         {
-            setCheckBox(this._currentMode);
+            _currentMode = Helper.LoadCurrentMode();
+            setRadioButtonAndChangeState(_currentMode);
+            this.Refresh();
+
             this.Show();
             this.ShowInTaskbar = true;
             this.WindowState = FormWindowState.Normal;
@@ -356,7 +361,7 @@ namespace Visafe
             RadioButton cb = (RadioButton)sender;
             if (cb.Checked)
             {
-                setCheckBox(Constant.SECURITY_MODE);
+                setRadioButtonAndChangeState(Constant.SECURITY_MODE);
             }
         }
 
@@ -365,7 +370,7 @@ namespace Visafe
             RadioButton cb = (RadioButton)sender;
             if (cb.Checked)
             {
-                setCheckBox(Constant.FAMILY_MODE);
+                setRadioButtonAndChangeState(Constant.FAMILY_MODE);
             }
         }
 
@@ -374,7 +379,7 @@ namespace Visafe
             RadioButton cb = (RadioButton)sender;
             if (cb.Checked)
             {
-                setCheckBox(Constant.SECURITY_PLUS_MODE);
+                setRadioButtonAndChangeState(Constant.SECURITY_PLUS_MODE);
             }
         }
 
@@ -383,41 +388,11 @@ namespace Visafe
             RadioButton cb = (RadioButton)sender;
             if (cb.Checked)
             {
-                setCheckBox(Constant.CUSTOM_MODE);
+                setRadioButtonAndChangeState(Constant.CUSTOM_MODE);
             }
         }
 
-        private void setCheckBox(string mode)
-        {
-            switch (mode) {
-                case Constant.SECURITY_MODE:
-                    _currentMode = Constant.SECURITY_MODE;
-                    this.familyRadioButton.Checked = false;
-                    this.securityPlusRadioButton.Checked = false;
-                    this.customRadioButton.Checked = false;
-                    break;
-                case Constant.FAMILY_MODE:
-                    _currentMode = Constant.FAMILY_MODE;
-                    this.securityRadioButton.Checked = false;
-                    this.securityPlusRadioButton.Checked = false;
-                    this.customRadioButton.Checked = false;
-                    break;
-                case Constant.SECURITY_PLUS_MODE:
-                    _currentMode = Constant.SECURITY_PLUS_MODE;
-                    this.securityRadioButton.Checked = false;
-                    this.familyRadioButton.Checked = false;
-                    this.customRadioButton.Checked = false;
-                    break;
-                case Constant.CUSTOM_MODE:
-                    _currentMode = Constant.CUSTOM_MODE;
-                    this.securityRadioButton.Checked = false;
-                    this.familyRadioButton.Checked = false;
-                    this.securityPlusRadioButton.Checked = false;
-                    break;
-            }
-        }
-
-        private void setCheckBoxOnStart(string mode)
+        private void setRadioButtonAndChangeState(string mode)
         {
             switch (mode)
             {
