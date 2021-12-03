@@ -13,6 +13,7 @@ using Newtonsoft.Json;
 using System.Threading;
 using System.Security.AccessControl;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Visafe
 {
@@ -20,16 +21,21 @@ namespace Visafe
     {
         private EventLog _eventLog;
 
-        private DeviceInfoObtainer deviceInfoObtainer = new DeviceInfoObtainer();
-
         private Updater _updater;
+
+        private string _currentMode;
+
+        private Form2 _custSettForm;
 
         public Form1()
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "Visafe";
-
             _updater = new Updater(Constant.VERSION_INFO_URL);
+            _currentMode = Helper.LoadCurrentMode();
+
+            _custSettForm = new Form2();
+            _custSettForm.Hide();
 
             InitializeComponent();
         }
@@ -39,25 +45,45 @@ namespace Visafe
         {
             notifyIcon1.Visible = false;
 
-            bool started = startService();
+            //bool started = startService(_currentMode);
 
-            if (started == false)
+            var task1 = Task.Run(() => checkServiceStarted());
+            if (task1.Wait(TimeSpan.FromMinutes(5)))
             {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                bool servStarted = task1.Result;
+
+                if (servStarted)
+                {
+                    var task2 = Task.Run(() => startService(_currentMode));
+                    if (task2.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+                    {
+                        ShowToolTipOn();
+                    }
+                    else
+                    {
+                        MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowToolTipOff();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowToolTipOff();
+                }
+            } 
+            else
+            {
+                MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowToolTipOff();
             }
 
             notifyIcon1.Visible = true;
-            item_turnoff.Visible = true;
-            item_turnon.Visible = false;
+
+            setRadioButtonAndChangeState(_currentMode);
+
             Hide();
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
-
-            //string user_id = this.deviceInfoObtainer.GetID();
-            string invitingURL = this.deviceInfoObtainer.GetUrl();
-
-            text_url.Text = invitingURL;
 
             checkForUpdate();
         }
@@ -67,210 +93,63 @@ namespace Visafe
             Hide();
         }
 
-        public void SendInvitingUrl()
+        //function used to start service
+        private bool startService(string mode)
         {
-            string url = text_url.Text;
+            string signalDataString;
+            string sendResult;
 
-            status_label.Text = "Đang lưu...";
-
-            string Pattern = @"^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=. ]+$";
-            Regex Rgx = new Regex(Pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-            if ((url == "") || !url.Contains("http"))
+            if (mode != Constant.CUSTOM_MODE)
             {
-                status_label.Text = "";
-                MessageBox.Show("URL không hợp lệ", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else if (!Rgx.IsMatch(url))
-            {
-                status_label.Text = "";
-                MessageBox.Show("URL không hợp lệ", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            else
-            {
-                string realUrl = Helper.UrlLengthen(url);
+                signalDataString = "signal << " + mode + ";";
 
-                string deviceId;
-                string groupId;
-                string groupName;
-                string deviceName;
-                string macAddress;
-                string ipAddress;
-                string deviceType;
-                string deviceOwner;
-                string deviceDetail;
+                sendResult = Helper.SendSignal(signalDataString);
 
-                //deviceId = this.deviceInfoObtainer.GetID();
-
-                string signalDataString = "signal << get_id;";
-                var tempId = Helper.SendSignal(signalDataString);
-
-                if (tempId != null)
+                if (sendResult == null || sendResult == "error")
                 {
-                    deviceId = tempId;
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
                 }
                 else
                 {
-                    deviceId = "";
+                    return true;
                 }
+            } 
+            else
+            {
+                signalDataString = "signal << " + mode + ";";
 
-                try
-                {
-                    Uri myUri = new Uri(realUrl);
-                    groupId = HttpUtility.ParseQueryString(myUri.Query).Get("groupId");
-                    groupName = HttpUtility.ParseQueryString(myUri.Query).Get("groupName");
-                }
-                catch
-                {
-                    groupId = "";
-                    groupName = "";
-                }
+                sendResult = Helper.SendSignal(signalDataString);
 
+                if (sendResult == null)
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
+                else if (sendResult == "no_group")
+                {
+                    signalDataString = "signal << " + Constant.SECURITY_MODE + ";";
 
-                try
-                {
-                    deviceName = System.Environment.GetEnvironmentVariable("COMPUTERNAME");
-                }
-                catch
-                {
-                    deviceName = "unknown";
-                }
+                    sendResult = Helper.SendSignal(signalDataString);
 
-                try
-                {
-                    macAddress = DeviceInfoObtainer.GetMac();
-                }
-                catch
-                {
-                    macAddress = "unknown";
-                }
-
-                try
-                {
-                    ipAddress = DeviceInfoObtainer.GetIpAddress();
-                }
-                catch
-                {
-                    ipAddress = "unknown";
-                }
-
-                deviceType = "Windows";
-
-                try
-                {
-                    deviceOwner = Environment.UserName;
-                }
-                catch
-                {
-                    deviceOwner = "unknown";
-                }
-
-                try
-                {
-                    deviceDetail = Environment.OSVersion.ToString();
-                }
-                catch
-                {
-                    deviceDetail = "unknown";
-                }
-
-                //establish secure channel
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
-
-                var client = new RestClient(realUrl);
-                var request = new RestRequest(Method.POST);
-                request.RequestFormat = DataFormat.Json;
-
-                try
-                {
-                    request.AddJsonBody(new
+                    if (sendResult == null || sendResult == "error")
                     {
-                        deviceId = deviceId,
-                        groupName = groupName,
-                        groupId = groupId,
-                        deviceName = deviceName,
-                        macAddress = macAddress,
-                        ipAddress = ipAddress,
-                        deviceType = deviceType,
-                        deviceOwner = deviceOwner,
-                        deviceDetail = deviceDetail,
-                    });
-
-                    var response = client.Execute(request);
-
-                    JoiningGroupResp respContent = JsonConvert.DeserializeObject<JoiningGroupResp>(response.Content);
-
-                    //var responseString = response.Content.ReadAsStringAsync();
-
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        status_label.Text = "";
-                        MessageBox.Show(respContent.local_msg, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        stopService();
+                        return false;
                     }
                     else
                     {
-                        string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                        string visafeFolder = Path.Combine(appDataFolder, "Visafe");
-
-                        if (Directory.Exists(visafeFolder) == false)
-                        {
-                            Directory.CreateDirectory(visafeFolder);
-                        }
-
-                        string urlConfig = Path.Combine(visafeFolder, Constant.URL_CONFIG_FILE);
-
-                        if (!File.Exists(urlConfig))
-                        {
-                            File.Create(urlConfig).Dispose();
-                        }
-
-                        FileInfo fi = new FileInfo(urlConfig);
-                        using (TextWriter writer = new StreamWriter(fi.Open(FileMode.Truncate)))
-                        {
-                            writer.WriteLine(url);
-                            writer.Close();
-                        }
-
-                        status_label.Text = "";
-                        MessageBox.Show(Constant.SAVING_SUCCESS_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        setRadioButtonAndChangeState(Constant.SECURITY_MODE);
+                        MessageBox.Show("Thiết bị chưa tham gia nhóm, vui lòng nhấn Cài đặt để thiết lập. \n\nThiết lập sẽ được chuyển về chế độ An toàn thông tin (mặc định).", 
+                            Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return true;
                     }
                 }
-                catch (Exception e)
+                else
                 {
-                    status_label.Text = "";
-                    Console.WriteLine(e.Message);
-                    MessageBox.Show(Constant.SAVING_ERROR_MSG + "\n\nURL không hợp lệ hoặc thiết bị đã tham gia vào nhóm hoặc thiết bị đang ở nhóm khác", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return true;
                 }
-            }
-        }
-
-        //function used to start service
-        private bool startService()
-        {
-            string signalDataString = "signal << check_start";
-            string sendResult = Helper.SendSignal(signalDataString);
-            int elapsed = 0;
-            while (sendResult != Constant.STARTED_NOTI_STRING) {
-                sendResult = Helper.SendSignal(signalDataString);
-                Thread.Sleep(2000);
-                elapsed += 2000;
-                if (elapsed > 8000)
-                {
-                    return false;
-                }
-            }
-
-            signalDataString = "signal << start;";
-
-            sendResult = Helper.SendSignal(signalDataString);
-
-            if (sendResult == null)
-            {
-                return false;
-            }
-            else
-            {
-                return true;
             }
         }
 
@@ -292,6 +171,7 @@ namespace Visafe
         {
             string signalDataString = "signal << exit;";
 
+            //var sendResult = Helper.SendSignal(signalDataString);
             var sendResult = Helper.SendSignal(signalDataString);
 
             if (sendResult == null)
@@ -299,6 +179,25 @@ namespace Visafe
                 //show message box
                 MessageBox.Show("Không thể tắt Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private bool checkServiceStarted()
+        {
+            string signalDataString = "signal << check_start";
+            string sendResult = Helper.SendSignal(signalDataString);
+            int elapsed = 0;
+            while (sendResult != Constant.STARTED_NOTI_STRING)
+            {
+                sendResult = Helper.SendSignal(signalDataString);
+                Thread.Sleep(2000);
+                elapsed += 2000;
+                if (elapsed > 8000)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private void checkForUpdate()
@@ -352,9 +251,7 @@ namespace Visafe
         {
             if (e.Button == MouseButtons.Left)
             {
-                Show();
-                this.ShowInTaskbar = true;
-                WindowState = FormWindowState.Normal;
+                FormDisplay();
             }
         }
 
@@ -362,22 +259,35 @@ namespace Visafe
         //restart program and service
         private void item_turnon_Click(object sender, EventArgs e)
         {
-            //start service
-            bool started = startService();
-
-            if (started == false)
+            var task = Task.Run(() => checkServiceStarted());
+            if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
             {
-                MessageBox.Show("Không thể khởi động Visafe", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                bool servStarted = task.Result;
+
+                if (servStarted)
+                {
+                    var task2 = Task.Run(() => startService(_currentMode));
+                    if (task2.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+                    {
+                        ShowToolTipOn();
+                    }
+                    else
+                    {
+                        MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowToolTipOff();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowToolTipOff();
+                }
             }
-
-            //start program
-            notifyIcon1.Icon = Resources.turnon;
-
-            item_turnoff.Visible = true;
-            item_turnon.Visible = false;
-            ShowInTaskbar = false;
-            //WindowState = FormWindowState.Minimized;
-            Hide();
+            else
+            {
+                MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowToolTipOff();
+            }
         }
 
         // When click Turn off in tray icon
@@ -385,10 +295,13 @@ namespace Visafe
         //stop service
         private void item_turnoff_Click(object sender, EventArgs e)
         {
-            item_turnoff.Visible = false;
-            item_turnon.Visible = true;
-            notifyIcon1.Icon = Resources.turnoff;
-            stopService();
+            var task = Task.Run(() => stopService());
+            if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+            {
+                //do nothing
+            }
+
+            ShowToolTipOff();
         }
 
         //When click Exit in tray icon
@@ -398,23 +311,48 @@ namespace Visafe
         {
             if (MessageBox.Show("Thiết bị của bạn có thể bị ảnh hưởng bởi tấn công mạng. \nBạn muốn tắt bảo vệ?", "Bạn đang tắt chế độ bảo vệ!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             {
-                exitService();
+                var task = Task.Run(() => exitService());
+                if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+                {
+                    //do nothing
+                }
+
                 Application.Exit();
             }
         }
 
         private void openSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Show();
-            this.ShowInTaskbar = true;
-            WindowState = FormWindowState.Normal;
+            FormDisplay();
         }
 
         private void button_save_Click(object sender, EventArgs e)
         {
-            //Hide();
-            //WindowState = FormWindowState.Minimized;
-            SendInvitingUrl();
+            button_save.Text = "Đang lưu...";
+            this.Refresh();
+
+            bool started = false;
+
+            var task = Task.Run(() => startService(_currentMode));
+            if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+            {
+                started = task.Result;
+            }
+            else
+            {
+                MessageBox.Show(Constant.ERR_SAVING_CONFIG_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowToolTipOff();
+            }
+
+            if (started)
+            {
+                SaveCurrentMode(_currentMode);
+                ShowToolTipOn();
+                MessageBox.Show("Đã lưu thiết lập", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            button_save.Text = "Lưu";
+            this.Refresh();
         }
 
         private void button_cancel_Click(object sender, EventArgs e)
@@ -423,21 +361,120 @@ namespace Visafe
             WindowState = FormWindowState.Minimized;
         }
 
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        private void FormDisplay()
         {
-            System.Diagnostics.Process.Start(Constant.ADMIN_DASHBOARD_URL);
-        }
+            _currentMode = Helper.LoadCurrentMode();
+            setRadioButtonAndChangeState(_currentMode);
+            this.Refresh();
 
-        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(Constant.VISAFE_DOC_URL);
-        }
-
-        private void FormDisplay(object state)
-        {
             this.Show();
             this.ShowInTaskbar = true;
             this.WindowState = FormWindowState.Normal;
+        }
+
+        private void ShowToolTipOn()
+        {
+            notifyIcon1.Icon = Resources.turnon;
+            item_turnoff.Visible = true;
+            item_turnon.Visible = false;
+        }
+
+        private void ShowToolTipOff()
+        {
+            notifyIcon1.Icon = Resources.turnoff;
+            item_turnoff.Visible = false;
+            item_turnon.Visible = true;
+        }
+
+        private void customSettingButton_Click(object sender, EventArgs e)
+        {
+            Form2 settingForm = new Form2();
+            settingForm.ShowDialog();
+        }
+
+        private void securityRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
+            {
+                setRadioButtonAndChangeState(Constant.SECURITY_MODE);
+            }
+        }
+
+        private void familyRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
+            {
+                setRadioButtonAndChangeState(Constant.FAMILY_MODE);
+            }
+        }
+
+        private void securityPlusRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
+            {
+                setRadioButtonAndChangeState(Constant.SECURITY_PLUS_MODE);
+            }
+        }
+
+        private void customRadioButton_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton cb = (RadioButton)sender;
+            if (cb.Checked)
+            {
+                setRadioButtonAndChangeState(Constant.CUSTOM_MODE);
+            }
+        }
+
+        private void setRadioButtonAndChangeState(string mode)
+        {
+            switch (mode)
+            {
+                case Constant.SECURITY_MODE:
+                    this._currentMode = Constant.SECURITY_MODE;
+                    this.securityRadioButton.Checked = true;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
+                    break;
+                case Constant.FAMILY_MODE:
+                    this._currentMode = Constant.FAMILY_MODE;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = true;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = false;
+                    break;
+                case Constant.SECURITY_PLUS_MODE:
+                    this._currentMode = Constant.SECURITY_PLUS_MODE;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = true;
+                    this.customRadioButton.Checked = false;
+                    break;
+                case Constant.CUSTOM_MODE:
+                    this._currentMode = Constant.CUSTOM_MODE;
+                    this.securityRadioButton.Checked = false;
+                    this.familyRadioButton.Checked = false;
+                    this.securityPlusRadioButton.Checked = false;
+                    this.customRadioButton.Checked = true;
+                    break;
+            }
+        }
+
+        private void helpLink_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo helpSite = new ProcessStartInfo(Constant.HELP_SITE_URL);
+                Process.Start(helpSite);
+            }
+            catch
+            {
+                MessageBox.Show("Không thể đi đến URL", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            
         }
     }
 }

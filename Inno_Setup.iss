@@ -9,7 +9,7 @@
                           
 // custom setup info
 #define MyAppName "VisafeWindows"
-#define MyAppVersion "1.1.6"
+#define MyAppVersion "2.0.0"
 #define MyAppPublisher "National Cyber Security Center of Vietnam - Vietnam NCSC"
 #define MyAppURL "https://visafe.vn/"
 #define MyAppExeName "Visafe.exe"
@@ -317,7 +317,7 @@ Source: "Visafe\Visafe\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: igno
   BeforeInstall: TaskKill('Visafe.exe')
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: StopAndKillVisafeService()
-Source: "Visafe\Visafe\bin\Debug\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion; \
+Source: "SupportPrograms\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: TaskKill('dnsproxy.exe')
 Source: "Visafe\Visafe\bin\Debug\Visafe.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\Resources\logo-footer.ico"; DestDir: "{app}"; Flags: ignoreversion
@@ -354,9 +354,9 @@ Root: HKLM; Subkey: "SOFTWARE\Microsoft\Windows\CurrentVersion\Run"; \
 
 [UninstallRun]
 Filename: {sys}\sc.exe; Parameters: "stop VisafeService" ; Flags: runhidden
-Filename: {sys}\taskkill.exe; Parameters: "/f /im {#MyAppExeName}"; Flags: skipifdoesntexist runhidden
-Filename: {sys}\taskkill.exe; Parameters: "/f /im dnsproxy.exe"; Flags: skipifdoesntexist runhidden
-Filename: {sys}\taskkill.exe; Parameters: "/f /im VisafeService.exe"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\taskkill.exe; Parameters: "/im {#MyAppExeName} /t /f"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\taskkill.exe; Parameters: "/im dnsproxy.exe /t /f"; Flags: skipifdoesntexist runhidden
+Filename: {sys}\taskkill.exe; Parameters: "/im VisafeService.exe /t /f"; Flags: skipifdoesntexist runhidden
 Filename: {sys}\sc.exe; Parameters: "delete VisafeService" ; Flags: runhidden
 
 [UninstallDelete]
@@ -394,7 +394,7 @@ var
   ResultCode1: Integer;
   ResultCode2: Integer;
 begin
-    Exec('sc.exe', 'stop ' + 'VisafeService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode1);
+    Exec('sc.exe QUERY | FIND "SERVICE_NAME: VisafeService" && IF %ERRORLEVEL% EQU 0 NET', 'stop ' + 'VisafeService', '', SW_HIDE, ewWaitUntilTerminated, ResultCode1);
     Exec('taskkill.exe', '/f /im VisafeService.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode2);
 end;
 

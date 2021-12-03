@@ -18,6 +18,15 @@ namespace VisafeService
         public string deviceId { get; set; }
     }
 
+    class CheckDeviceResponse
+    {
+        public int status_code { get; set; }
+        public string groupId { get; set; }
+        public string groupName { get; set; }
+        public string groupOwner { get; set; }
+        public int numberDevice { get; set; }
+    }
+
     class RoutingResponse
     {
         public string hostname { get; set; }
@@ -270,28 +279,29 @@ namespace VisafeService
         public static string GetDohHost()
         {
             string dohHost = Constants.DEFAULT_DOH_HOST;
-            try
-            {
-                var client = new RestClient(Constants.ROUTING_API);
-                client.Timeout = 10000;
 
-                var request = new RestRequest(Method.GET);
-                request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
+            //try
+            //{
+            //    var client = new RestClient(Constants.ROUTING_API);
+            //    client.Timeout = 10000;
 
-                IRestResponse response = client.Execute(request);
+            //    var request = new RestRequest(Method.GET);
+            //    request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
 
-                if (response.StatusCode == HttpStatusCode.OK)
-                {
-                    string rawResponse = response.Content;
-                    RoutingResponse responseContent = JsonConvert.DeserializeObject<RoutingResponse>(rawResponse);
-                    dohHost = responseContent.hostname;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return dohHost;
-            }
+            //    IRestResponse response = client.Execute(request);
+
+            //    if (response.StatusCode == HttpStatusCode.OK)
+            //    {
+            //        string rawResponse = response.Content;
+            //        RoutingResponse responseContent = JsonConvert.DeserializeObject<RoutingResponse>(rawResponse);
+            //        dohHost = responseContent.hostname;
+            //    }
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine(e);
+            //    return dohHost;
+            //}
 
             return dohHost;
         }
@@ -320,6 +330,48 @@ namespace VisafeService
             }
 
             return returnedSignal;
+        }
+
+        public static string CheckDevice(string deviceId)
+        {
+            try
+            {
+                var client = new RestClient(Constants.CHECK_DEVICE_API);
+                client.Timeout = 15000;
+
+                var request = new RestRequest(Method.POST);
+                request.RequestFormat = DataFormat.Json;
+                request.AddJsonBody(new { deviceId = deviceId });
+
+                request.OnBeforeDeserialization = resp => { resp.ContentType = "application/json"; };
+
+                IRestResponse response = client.Execute(request);
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    string rawResponse = response.Content;
+                    CheckDeviceResponse responseContent = JsonConvert.DeserializeObject<CheckDeviceResponse>(rawResponse);
+                    int statusCode = responseContent.status_code;
+
+                    if (statusCode == 1)
+                    {
+                        return responseContent.groupId;
+                    }
+                    else
+                    {
+                        return "";
+                    }
+                } 
+                else
+                {
+                    return "";
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return "";
+            }
         }
     }
 }

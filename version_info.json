@@ -1,7 +1,7 @@
 {
     "stable" : {
-        "version": "1.1.6",
-        "url":"https://github.com/Visafe/VisafeWindows/releases/download/v1.1.6/VisafeWindows-installer.exe",
-        "description":"- Khắc vục vấn đề không có kết nối mạng khi khởi động lại máy\n- Khi gỡ cài đặt thì chuyển DNS server trong cài đặt về như cũ\n- Thêm một số tính năng nhỏ trong UI\n- Bỏ một số màn hình thông báo không cần thiết"
+        "version": "2.0.0",
+        "url":"https://github.com/VisafeTeam/VisafeWindows/releases/download/v2.0.0/VisafeWindows-installer.exe",
+        "description":"- Giao diện ứng dụng mới\n- Thêm các chức năng kết nối mặc định\n- Sửa chữa lỗi"
     }
 }

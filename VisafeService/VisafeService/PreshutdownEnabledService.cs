@@ -41,7 +41,7 @@ namespace VisafeService
                 try
                 {
                     CanPreShutdown = true;
-                    baseCallback.Invoke(this, new object[] { ServiceCommand.SERVICE_CONTROL_SHUTDOWN });
+                    baseCallback.Invoke(this, new object[] { 0x00000001 });
                 }
                 finally
                 {
