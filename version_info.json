@@ -1,7 +1,7 @@
 {
     "stable" : {
         "version": "2.0.0",
-        "url":"https://github.com/VisafeTeam/VisafeWindows/releases/download/v2.0.0/VisafeWindows-installer.exe",
+        "url":"https://github.com/Visafe/VisafeWindows/releases/download/v2.0.0/VisafeWindows-installer.exe",
         "description":"- Giao diện ứng dụng mới\n- Thêm các chức năng kết nối mặc định\n- Sửa chữa lỗi"
     }
 }
