@@ -31,9 +31,7 @@ namespace Visafe
         {
             _eventLog = new EventLog("Application");
             _eventLog.Source = "Visafe";
-
             _updater = new Updater(Constant.VERSION_INFO_URL);
-
             _currentMode = Helper.LoadCurrentMode();
 
             _custSettForm = new Form2();
@@ -49,22 +47,40 @@ namespace Visafe
 
             //bool started = startService(_currentMode);
 
-            var task = Task.Run(() => startService(_currentMode));
-            if (task.Wait(TimeSpan.FromMinutes(5)))
+            var task1 = Task.Run(() => checkServiceStarted());
+            if (task1.Wait(TimeSpan.FromMinutes(5)))
             {
-                notifyIcon1.Icon = Resources.turnon;
-            }
+                bool servStarted = task1.Result;
+
+                if (servStarted)
+                {
+                    var task2 = Task.Run(() => startService(_currentMode));
+                    if (task2.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+                    {
+                        ShowToolTipOn();
+                    }
+                    else
+                    {
+                        MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowToolTipOff();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowToolTipOff();
+                }
+            } 
             else
             {
                 MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
+                ShowToolTipOff();
             }
+
+            notifyIcon1.Visible = true;
 
             setRadioButtonAndChangeState(_currentMode);
 
-            notifyIcon1.Visible = true;
-            item_turnoff.Visible = true;
-            item_turnon.Visible = false;
             Hide();
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
@@ -80,19 +96,8 @@ namespace Visafe
         //function used to start service
         private bool startService(string mode)
         {
-            string signalDataString = "signal << check_start";
-            string sendResult = Helper.SendSignal(signalDataString);
-            int elapsed = 0;
-            while (sendResult != Constant.STARTED_NOTI_STRING) {
-                sendResult = Helper.SendSignal(signalDataString);
-                Thread.Sleep(2000);
-                elapsed += 2000;
-                if (elapsed > 8000)
-                {
-                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return false;
-                }
-            }
+            string signalDataString;
+            string sendResult;
 
             if (mode != Constant.CUSTOM_MODE)
             {
@@ -176,6 +181,25 @@ namespace Visafe
             }
         }
 
+        private bool checkServiceStarted()
+        {
+            string signalDataString = "signal << check_start";
+            string sendResult = Helper.SendSignal(signalDataString);
+            int elapsed = 0;
+            while (sendResult != Constant.STARTED_NOTI_STRING)
+            {
+                sendResult = Helper.SendSignal(signalDataString);
+                Thread.Sleep(2000);
+                elapsed += 2000;
+                if (elapsed > 8000)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         private void checkForUpdate()
         {
             bool newVersion = _updater.CheckForUpdate();
@@ -235,26 +259,35 @@ namespace Visafe
         //restart program and service
         private void item_turnon_Click(object sender, EventArgs e)
         {
-            //start service
-            //bool started = startService(this._currentMode);
-
-            var task = Task.Run(() => startService(_currentMode));
-            if (task.Wait(TimeSpan.FromSeconds(15)))
+            var task = Task.Run(() => checkServiceStarted());
+            if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
             {
-                //start program
-                notifyIcon1.Icon = Resources.turnon;
+                bool servStarted = task.Result;
 
-                item_turnoff.Visible = true;
-                item_turnon.Visible = false;
-                ShowInTaskbar = false;
+                if (servStarted)
+                {
+                    var task2 = Task.Run(() => startService(_currentMode));
+                    if (task2.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+                    {
+                        ShowToolTipOn();
+                    }
+                    else
+                    {
+                        MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ShowToolTipOff();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ShowToolTipOff();
+                }
             }
             else
             {
                 MessageBox.Show(Constant.ERR_START_SERVICE_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowToolTipOff();
             }
-
-            //WindowState = FormWindowState.Minimized;
-            Hide();
         }
 
         // When click Turn off in tray icon
@@ -262,10 +295,13 @@ namespace Visafe
         //stop service
         private void item_turnoff_Click(object sender, EventArgs e)
         {
-            item_turnoff.Visible = false;
-            item_turnon.Visible = true;
-            notifyIcon1.Icon = Resources.turnoff;
-            stopService();
+            var task = Task.Run(() => stopService());
+            if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
+            {
+                //do nothing
+            }
+
+            ShowToolTipOff();
         }
 
         //When click Exit in tray icon
@@ -276,23 +312,17 @@ namespace Visafe
             if (MessageBox.Show("Thiết bị của bạn có thể bị ảnh hưởng bởi tấn công mạng. \nBạn muốn tắt bảo vệ?", "Bạn đang tắt chế độ bảo vệ!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             {
                 var task = Task.Run(() => exitService());
-                if (task.Wait(TimeSpan.FromSeconds(15)))
+                if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
                 {
-                    Application.Exit();
+                    //do nothing
                 }
-                else
-                {
-                    Application.Exit();
-                }
+
+                Application.Exit();
             }
         }
 
         private void openSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            //setRadioButton(this._currentMode);
-            //Show();
-            //this.ShowInTaskbar = true;
-            //WindowState = FormWindowState.Normal;
             FormDisplay();
         }
 
@@ -301,24 +331,26 @@ namespace Visafe
             button_save.Text = "Đang lưu...";
             this.Refresh();
 
-            //bool started = startService(this._currentMode);
             bool started = false;
 
             var task = Task.Run(() => startService(_currentMode));
-            if (task.Wait(TimeSpan.FromSeconds(15)))
+            if (task.Wait(TimeSpan.FromSeconds(Constant.TIMEOUT)))
             {
                 started = task.Result;
             }
             else
             {
                 MessageBox.Show(Constant.ERR_SAVING_CONFIG_MSG, Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShowToolTipOff();
             }
 
-            if (started == true)
+            if (started)
             {
                 SaveCurrentMode(_currentMode);
+                ShowToolTipOn();
                 MessageBox.Show("Đã lưu thiết lập", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
+
             button_save.Text = "Lưu";
             this.Refresh();
         }
@@ -327,16 +359,6 @@ namespace Visafe
         {
             Hide();
             WindowState = FormWindowState.Minimized;
-        }
-
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(Constant.ADMIN_DASHBOARD_URL);
-        }
-
-        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            System.Diagnostics.Process.Start(Constant.VISAFE_DOC_URL);
         }
 
         private void FormDisplay()
@@ -348,6 +370,20 @@ namespace Visafe
             this.Show();
             this.ShowInTaskbar = true;
             this.WindowState = FormWindowState.Normal;
+        }
+
+        private void ShowToolTipOn()
+        {
+            notifyIcon1.Icon = Resources.turnon;
+            item_turnoff.Visible = true;
+            item_turnon.Visible = false;
+        }
+
+        private void ShowToolTipOff()
+        {
+            notifyIcon1.Icon = Resources.turnoff;
+            item_turnoff.Visible = false;
+            item_turnon.Visible = true;
         }
 
         private void customSettingButton_Click(object sender, EventArgs e)

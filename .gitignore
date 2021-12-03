@@ -1,6 +1,7 @@
 *test*
 .vs/
 *.pfx
+*.crt
 *.bat
 VisafeWindows-installer.exe
 VisafeWindows-installer.zip

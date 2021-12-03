@@ -27,5 +27,7 @@ namespace Visafe
 
         public const string ERR_START_SERVICE_MSG = "Không thể khởi động Visafe";
         public const string ERR_SAVING_CONFIG_MSG = "Không thể lưu thiết lập";
+
+        public const int TIMEOUT = 5; // amount of time to time out (second)
     }
 }

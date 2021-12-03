@@ -317,7 +317,7 @@ Source: "Visafe\Visafe\bin\Debug\{#MyAppExeName}"; DestDir: "{app}"; Flags: igno
   BeforeInstall: TaskKill('Visafe.exe')
 Source: "VisafeService\VisafeService\bin\Debug\VisafeService.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: StopAndKillVisafeService()
-Source: "Visafe\Visafe\bin\Debug\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion; \
+Source: "SupportPrograms\dnsproxy.exe"; DestDir: "{app}"; Flags: ignoreversion; \
   BeforeInstall: TaskKill('dnsproxy.exe')
 Source: "Visafe\Visafe\bin\Debug\Visafe.pdb"; DestDir: "{app}"; Flags: ignoreversion
 Source: "Visafe\Visafe\Resources\logo-footer.ico"; DestDir: "{app}"; Flags: ignoreversion
