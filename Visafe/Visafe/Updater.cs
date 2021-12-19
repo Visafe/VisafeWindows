@@ -71,11 +71,20 @@ namespace Visafe
 
         }
 
+        /// <summary>
+        /// Return current version
+        /// </summary>
+        /// <returns></returns>
         public string GetVersion()
         {
             return _currentVersion;
         }
 
+        /// <summary>
+        /// Get the information about the lastest version of Visafe. 
+        /// This function returns true if the version is different from the current version stored in the machine.
+        /// </summary>
+        /// <returns></returns>
         public bool CheckForUpdate()
         {
             if (this._currentVersion == "")
@@ -123,6 +132,10 @@ namespace Visafe
             return false;
         }
 
+        /// <summary>
+        /// Download the new installer and execute it to install the new version.
+        /// </summary>
+        /// <returns></returns>
         public bool Upgrade()
         {
             if (NewVersion == "" || _newVersionUrl == "")
@@ -160,6 +173,13 @@ namespace Visafe
             return true;
         }
 
+
+        /// <summary>
+        /// Download the installer from the internet and store it in the Temp folder.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="version"></param>
+        /// <returns></returns>
         private string downloadInstaller(string url, string version)
         {
             string fileName = String.Format("VisafeUpgrader_v{0}.exe", version);

@@ -31,6 +31,10 @@ namespace VisafeService
             Helper.ExecuteCmdCommand(flushDnsCmd);
         }
 
+        /// <summary>
+        /// Get the interface which is used to connect the device to the internet
+        /// </summary>
+        /// <returns></returns>
         public static NetworkInterface GetActiveEthernetOrWifiNetworkInterface()
         {
             //coditions:
@@ -56,6 +60,10 @@ namespace VisafeService
             return Nic;
         }
 
+        /// <summary>
+        /// Set DNS Server to a specific IP address
+        /// </summary>
+        /// <param name="DnsString"></param>
         public void SetDNS(string DnsString)
         {
             flushDNS();
@@ -87,6 +95,9 @@ namespace VisafeService
             }
         }
 
+        /// <summary>
+        /// Set the DNS server back to user's settings
+        /// </summary>
         public void UnsetDNS()
         {
             var CurrentInterface = _currInterface;
@@ -144,6 +155,10 @@ namespace VisafeService
             flushDNS();
         }
 
+        /// <summary>
+        /// Start the dnsproxy and connect to a specific DOH server
+        /// </summary>
+        /// <param name="DohServer"></param>
         public void Start(string DohServer)
         {
             //reset the dnsproxy before continue
@@ -175,6 +190,9 @@ namespace VisafeService
             isOn = true;
         }
 
+        /// <summary>
+        /// Kill the dnsproxy and unset the DNS server
+        /// </summary>
         public void Stop()
         {
             UnsetDNS();
@@ -201,6 +219,9 @@ namespace VisafeService
             }
         }
 
+        /// <summary>
+        /// Kill the dnsproxy and unset the DNS server
+        /// </summary>
         public void Exit()
         {
             UnsetDNS();

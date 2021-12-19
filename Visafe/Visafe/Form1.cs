@@ -40,13 +40,24 @@ namespace Visafe
             InitializeComponent();
         }
 
+        //Disable close button
+        private const int CP_DISABLE_CLOSE_BUTTON = 0x200;
+        protected override CreateParams CreateParams
+        {
+            get
+            {
+                CreateParams cp = base.CreateParams;
+                cp.ClassStyle = cp.ClassStyle | CP_DISABLE_CLOSE_BUTTON;
+                return cp;
+            }
+        }
+
         //function to start visafe application
         private void Form1_Load(object sender, EventArgs e)
         {
             notifyIcon1.Visible = false;
 
-            //bool started = startService(_currentMode);
-
+            // checkServiceStaterted is put into a task and this task will timeout after 5 minutes
             var task1 = Task.Run(() => checkServiceStarted());
             if (task1.Wait(TimeSpan.FromMinutes(5)))
             {
@@ -85,7 +96,7 @@ namespace Visafe
             ShowInTaskbar = false;
             WindowState = FormWindowState.Minimized;
 
-            checkForUpdate();
+            this.checkForUpdate();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
@@ -93,7 +104,9 @@ namespace Visafe
             Hide();
         }
 
-        //function used to start service
+        /// <summary>
+        /// Send the running mode to Visafe Service to start and establish connection
+        /// </summary>
         private bool startService(string mode)
         {
             string signalDataString;
@@ -153,7 +166,9 @@ namespace Visafe
             }
         }
 
-        //function used to stop service
+        /// <summary>
+        /// Send the signal 'stop' to Visafe Service to temporarily turn Visafe off.
+        /// </summary>
         private void stopService()
         {
             string signalDataString = "signal << stop;";
@@ -167,6 +182,9 @@ namespace Visafe
             }
         }
 
+        /// <summary>
+        /// Send the signal 'exit' to Visafe Service to exit Visafe.
+        /// </summary>
         private void exitService()
         {
             string signalDataString = "signal << exit;";
@@ -181,6 +199,9 @@ namespace Visafe
             }
         }
 
+        /// <summary>
+        /// Check if VisafeService has started by sending the signal 'check_start'.
+        /// </summary>
         private bool checkServiceStarted()
         {
             string signalDataString = "signal << check_start";
@@ -200,6 +221,10 @@ namespace Visafe
             return true;
         }
 
+        /// <summary>
+        /// Check for new version and display a window to ask for permission to update.
+        /// When the user clicks 'Yes', it will send the signal 'update' to Visafe Service to perform necessary steps
+        /// </summary>
         private void checkForUpdate()
         {
             bool newVersion = _updater.CheckForUpdate();
@@ -234,19 +259,11 @@ namespace Visafe
             }
         }
 
-        //Disable close button
-        private const int CP_DISABLE_CLOSE_BUTTON = 0x200;
-        protected override CreateParams CreateParams
-        {
-            get
-            {
-                CreateParams cp = base.CreateParams;
-                cp.ClassStyle = cp.ClassStyle | CP_DISABLE_CLOSE_BUTTON;
-                return cp;
-            }
-        }
-
-        //show the form if the notify icon is clicked by the left mouse
+        /// <summary>
+        /// Show the form when user clicks left mouse.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button == MouseButtons.Left)
@@ -255,8 +272,11 @@ namespace Visafe
             }
         }
 
-        //when click Turn on in tray icon
-        //restart program and service
+        /// <summary>
+        /// The function associated with the button "Bật" (item_turnon in the context menu strip)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void item_turnon_Click(object sender, EventArgs e)
         {
             var task = Task.Run(() => checkServiceStarted());
@@ -290,9 +310,11 @@ namespace Visafe
             }
         }
 
-        // When click Turn off in tray icon
-        //kill dnsproxy.exe
-        //stop service
+        /// <summary>
+        /// The function associated with the button "Tắt tạm thời" (item_turnoff in the context menu strip)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void item_turnoff_Click(object sender, EventArgs e)
         {
             var task = Task.Run(() => stopService());
@@ -304,9 +326,11 @@ namespace Visafe
             ShowToolTipOff();
         }
 
-        //When click Exit in tray icon
-        //close application
-        //stop service
+        /// <summary>
+        /// The function associated with the button "Thoát" (item_exit in the context menu strip)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void item_exit_Click(object sender, EventArgs e)
         {
             if (MessageBox.Show("Thiết bị của bạn có thể bị ảnh hưởng bởi tấn công mạng. \nBạn muốn tắt bảo vệ?", "Bạn đang tắt chế độ bảo vệ!", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
@@ -321,11 +345,21 @@ namespace Visafe
             }
         }
 
+        /// <summary>
+        /// The function associated with the button "Mở cài đặt" (openSettingsToolStripMenuItem in the context menu strip)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void openSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             FormDisplay();
         }
 
+        /// <summary>
+        /// The function associated with the button "Lưu" contained in Form1
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button_save_Click(object sender, EventArgs e)
         {
             button_save.Text = "Đang lưu...";
@@ -355,42 +389,47 @@ namespace Visafe
             this.Refresh();
         }
 
+        /// <summary>
+        /// The function associated with the button "Đóng" contained in Form1
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button_cancel_Click(object sender, EventArgs e)
         {
             Hide();
             WindowState = FormWindowState.Minimized;
         }
 
-        private void FormDisplay()
-        {
-            _currentMode = Helper.LoadCurrentMode();
-            setRadioButtonAndChangeState(_currentMode);
-            this.Refresh();
-
-            this.Show();
-            this.ShowInTaskbar = true;
-            this.WindowState = FormWindowState.Normal;
-        }
-
-        private void ShowToolTipOn()
-        {
-            notifyIcon1.Icon = Resources.turnon;
-            item_turnoff.Visible = true;
-            item_turnon.Visible = false;
-        }
-
-        private void ShowToolTipOff()
-        {
-            notifyIcon1.Icon = Resources.turnoff;
-            item_turnoff.Visible = false;
-            item_turnon.Visible = true;
-        }
-
+        /// <summary>
+        /// The function associated with the button "Cài đặt" contained in Form1.
+        /// It will create a new instance of Form2 and show it as a dialog.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void customSettingButton_Click(object sender, EventArgs e)
         {
             Form2 settingForm = new Form2();
             settingForm.ShowDialog();
         }
+
+        /// <summary>
+        /// The function associated with the link "Hướng dẫn sử dụng" contained in Form1.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void helpLink_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                ProcessStartInfo helpSite = new ProcessStartInfo(Constant.HELP_SITE_URL);
+                Process.Start(helpSite);
+            }
+            catch
+            {
+                MessageBox.Show("Không thể đi đến URL", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
 
         private void securityRadioButton_CheckedChanged(object sender, EventArgs e)
         {
@@ -428,6 +467,10 @@ namespace Visafe
             }
         }
 
+        /// <summary>
+        /// Change current mode and update on UI.
+        /// </summary>
+        /// <param name="mode"></param>
         private void setRadioButtonAndChangeState(string mode)
         {
             switch (mode)
@@ -463,18 +506,38 @@ namespace Visafe
             }
         }
 
-        private void helpLink_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Check current mode and display form 
+        /// </summary>
+        private void FormDisplay()
         {
-            try
-            {
-                ProcessStartInfo helpSite = new ProcessStartInfo(Constant.HELP_SITE_URL);
-                Process.Start(helpSite);
-            }
-            catch
-            {
-                MessageBox.Show("Không thể đi đến URL", Constant.NOTI_TITLE, MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            
+            _currentMode = Helper.LoadCurrentMode();
+            setRadioButtonAndChangeState(_currentMode);
+            this.Refresh();
+
+            this.Show();
+            this.ShowInTaskbar = true;
+            this.WindowState = FormWindowState.Normal;
+        }
+
+        /// <summary>
+        /// Show the tooltip image as on
+        /// </summary>
+        private void ShowToolTipOn()
+        {
+            notifyIcon1.Icon = Resources.turnon;
+            item_turnoff.Visible = true;
+            item_turnon.Visible = false;
+        }
+
+        /// <summary>
+        /// Show the tooltip image as off
+        /// </summary>
+        private void ShowToolTipOff()
+        {
+            notifyIcon1.Icon = Resources.turnoff;
+            item_turnoff.Visible = false;
+            item_turnon.Visible = true;
         }
     }
 }

@@ -22,12 +22,15 @@ namespace Visafe
         {
             InitializeComponent();
 
-            string invitingURL = this.deviceInfoObtainer.GetUrl();
+            _inviteUrl = this.deviceInfoObtainer.GetUrl();
 
-            text_url.Text = invitingURL;
+            text_url.Text = this._inviteUrl;
         }
 
-
+        /// <summary>
+        /// Make a request to add the device to a group.
+        /// </summary>
+        /// <returns></returns>
         private bool SendInvitingUrl()
         {
             string url = text_url.Text;

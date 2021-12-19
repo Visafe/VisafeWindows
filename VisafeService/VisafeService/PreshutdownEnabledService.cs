@@ -28,6 +28,10 @@ namespace VisafeService
             acceptedCommandsField.SetValue(this, acceptedCommands);
         }
 
+        /// <summary>
+        /// Override the OnCustomCommand method in ServiceBase
+        /// </summary>
+        /// <param name="customCommand"></param>
         protected override void OnCustomCommand(int customCommand)
         {
             if (customCommand == ServiceCommand.SERVICE_CONTROL_PRESHUTDOWN)

@@ -54,6 +54,11 @@ namespace Visafe
             return newurl;
         }
 
+        /// <summary>
+        /// Send signal to the named pipe
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         public static string SendSignal(string signal)
         {
             var pipeClient = new NamedPipeClientStream(".", Constant.VISAFE_SERVICE_PIPE, PipeDirection.InOut, PipeOptions.None);
@@ -80,6 +85,7 @@ namespace Visafe
             return returnedSignal;
         }
 
+
         public static Dictionary<string, string> ParseSignalString(string signalDataString)
         {
             Dictionary<string, string> result = new Dictionary<string, string>();
@@ -101,6 +107,10 @@ namespace Visafe
             return result;
         }
 
+        /// <summary>
+        /// Save the running mode to file
+        /// </summary>
+        /// <param name="mode"></param>
         public static void SaveCurrentMode(string mode)
         {
             string appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
@@ -125,6 +135,10 @@ namespace Visafe
             }
         }
 
+        /// <summary>
+        /// Load the running mode from file
+        /// </summary>
+        /// <returns></returns>
         public static string LoadCurrentMode()
         {
             string result = Constant.SECURITY_MODE;

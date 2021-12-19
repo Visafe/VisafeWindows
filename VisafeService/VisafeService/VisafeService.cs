@@ -37,7 +37,6 @@ namespace VisafeService
         public int dwWaitHint;
     };
 
-    //public partial class VisafeService : ServiceBase
     public partial class VisafeService : PreshutdownEnabledService
     {
         private Thread _thread = null;
@@ -119,21 +118,26 @@ namespace VisafeService
                         //    _dnsServer.Start();
                         //    ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         //}
+
+                        //connect to the server associated with SECURITY_MODE
                         else if (signalData["signal"] == Constants.SECURITY_MODE)
                         {
                             _dnsServer.Start(Constants.SECURITY_MODE_DOH);
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
+                        //connect to the server associated with FAMILY_MODE
                         else if (signalData["signal"] == Constants.FAMILY_MODE)
                         {
                             _dnsServer.Start(Constants.FAMILY_MODE_DOH);
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
+                        //connect to the server associated with SECURITY_PLUS_MODE
                         else if (signalData["signal"] == Constants.SECURITY_PLUS_MODE)
                         {
                             _dnsServer.Start(Constants.SECURITY_PLUS_MODE_DOH);
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
+                        //connect to the server associated with CUSTOM_MODE
                         else if (signalData["signal"] == Constants.CUSTOM_MODE)
                         {
                             string groupId = Helper.CheckDevice(Helper.GetID());
@@ -146,10 +150,14 @@ namespace VisafeService
                             _dnsServer.Start(Constants.CUSTOM_MODE_DOH);
                             ss.WriteString(groupId);
                         }
+                        //get the ID of device and return it to Visafe app
                         else if (signalData["signal"] == "get_device_id")
                         {
                             ss.WriteString(Helper.GetID());
                         }
+                        // check if the device is in any group.
+                        // if the device is not in any group, return no_group to the Visafe app.
+                        // Otherwise, it will return the GroupID to the Visafe app.
                         else if (signalData["signal"] == "check_group")
                         {
                             string groupId = Helper.CheckDevice(Helper.GetID());
@@ -161,11 +169,13 @@ namespace VisafeService
 
                             ss.WriteString(groupId);
                         }
+                        // Stop the dns proxy
                         else if (signalData["signal"] == "stop")
                         {
                             _dnsServer.Stop();
                             ss.WriteString("received"); //recevie signal from client and return it back to confirm
                         }
+                        // exit the dns proxy
                         else if (signalData["signal"] == "exit")
                         {
                             _dnsServer.Exit();
@@ -175,6 +185,7 @@ namespace VisafeService
                         {
                             ss.WriteString("received");
                         }
+                        //has the same functionality as get_device_id
                         else if (signalData["signal"] == "get_id")
                         {
                             string user_id = Helper.GetID();
